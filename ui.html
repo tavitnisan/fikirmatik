@@ -1,0 +1,1439 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>fikirmatik.ai</title>
+<link rel="icon" href="/logo.png">
+<style>
+:root{
+  --bg:#faf9f7; --side:#f3f1ed; --raised:#fff; --hover:rgba(40,30,20,.05); --active:rgba(40,30,20,.085);
+  --text:#1e1c19; --muted:#67625a; --faint:#99938a;
+  --border:#e7e3dc; --border-2:#d7d1c7;
+  --accent:#b25f0c; --accent-hover:#9c5207; --accent-soft:rgba(178,95,12,.10); --on-accent:#fff;
+  --user:#efebe4; --code:#f5f3ef; --code-bar:#ece9e3;
+  --ok:#2b8a54; --warn:#c08510; --bad:#c03e2b;
+  --shadow:0 1px 2px rgba(30,20,10,.05),0 8px 28px rgba(30,20,10,.07);
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Inter,system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#151413; --side:#1b1a18; --raised:#232220; --hover:rgba(255,255,255,.05); --active:rgba(255,255,255,.09);
+  --text:#ece8e1; --muted:#a69f95; --faint:#78736b;
+  --border:#2d2b28; --border-2:#3b3834;
+  --accent:#f0a24a; --accent-hover:#f6b669; --accent-soft:rgba(240,162,74,.13); --on-accent:#1d1307;
+  --user:#2b2926; --code:#1c1b19; --code-bar:#262522;
+  --ok:#4fc184; --warn:#f0b44a; --bad:#f07d68;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 28px rgba(0,0,0,.4);
+  color-scheme:dark;
+}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--text);font:15px/1.6 var(--sans);-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+button:disabled{cursor:default}
+input,textarea{font:inherit;color:inherit}
+svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+code,pre,.mono{font-family:var(--mono)}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.app{display:grid;grid-template-columns:268px minmax(0,1fr);height:100vh;height:100dvh}
+
+/* sidebar */
+.sidebar{background:var(--side);border-right:1px solid var(--border);display:flex;flex-direction:column;min-height:0}
+.brand{display:flex;align-items:center;gap:10px;padding:16px 18px 10px;font-weight:650;letter-spacing:-.01em}
+.logo{display:block;width:28px;height:28px;border-radius:8px;flex:none;object-fit:cover;background:#000;box-shadow:0 0 0 1px var(--border)}
+.logo.big{width:64px;height:64px;border-radius:18px;margin:0 auto}
+.new-chat{margin:6px 12px 8px;display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;border:1px solid var(--border-2);background:var(--raised);font-weight:550;font-size:14px}
+.new-chat:hover{border-color:var(--faint)}
+.chat-list{flex:1;overflow-y:auto;padding:2px 8px 12px}
+.group{font-size:12px;font-weight:600;color:var(--faint);padding:14px 10px 4px}
+.chat-item{display:flex;align-items:center;gap:6px;padding:6px 6px 6px 10px;border-radius:8px;color:var(--text);text-decoration:none;font-size:14px}
+.chat-item:hover{background:var(--hover)}
+.chat-item.active{background:var(--active)}
+.chat-item .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-item .del{opacity:0;color:var(--faint);padding:4px;border-radius:6px;display:flex}
+.chat-item:hover .del,.chat-item .del:focus-visible{opacity:1}
+.chat-item .del:hover{color:var(--bad);background:var(--hover)}
+.chat-item .del svg{width:15px;height:15px}
+.empty-list{color:var(--faint);font-size:13px;padding:10px}
+.side-foot{padding:10px 12px;border-top:1px solid var(--border)}
+.side-btn{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border-radius:8px;font-size:14px;color:var(--muted)}
+.side-btn:hover{background:var(--hover);color:var(--text)}
+
+/* main */
+.main{display:flex;flex-direction:column;min-width:0;min-height:0}
+.topbar{display:flex;align-items:center;gap:8px;padding:10px 16px;min-height:58px}
+.spacer{flex:1}
+.icon-btn{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:9px;color:var(--muted)}
+.icon-btn:hover{background:var(--hover);color:var(--text)}
+.pill{display:inline-flex;align-items:center;gap:8px;min-width:0;padding:6px 12px 6px 11px;border-radius:999px;border:1px solid var(--border);background:var(--raised);font-size:13px;font-weight:560}
+.pill:hover{border-color:var(--border-2)}
+.pill .label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill .sub{color:var(--faint);font-weight:450}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--faint);flex:none}
+.dot.ok{background:var(--ok);box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 20%,transparent)}
+.dot.warn{background:var(--warn);animation:pulse 1.4s ease-in-out infinite}
+.dot.bad{background:var(--bad)}
+@keyframes pulse{50%{opacity:.35}}
+
+.thread{flex:1;overflow-y:auto;overscroll-behavior:contain}
+.thread-inner{max-width:800px;min-height:100%;margin:0 auto;padding:6px 24px 28px;display:flex;flex-direction:column}
+
+/* empty chat */
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 0 48px}
+.hello{text-align:center}
+.hello h1{font-size:28px;font-weight:620;letter-spacing:-.02em;margin:18px 0 6px}
+.hello p{color:var(--muted);margin:0;font-size:14.5px}
+.card{width:100%;max-width:540px;background:var(--raised);border:1px solid var(--border);border-radius:16px;padding:22px 22px 20px;box-shadow:var(--shadow)}
+.card-head{display:flex;align-items:center;gap:12px}
+.card-head h2{font-size:17px;line-height:1.35;margin:0;font-weight:620;letter-spacing:-.01em}
+.card-text{color:var(--muted);margin:10px 0 0;font-size:14.5px}
+.card-text code,.sm-note code{font-size:.88em;background:var(--code);padding:.05em .3em;border-radius:4px}
+.sig{width:10px;height:10px;border-radius:50%;background:var(--faint);flex:none}
+.sig.bad{background:var(--bad)}
+.spinner{width:16px;height:16px;border-radius:50%;border:2px solid var(--border-2);border-top-color:var(--accent);animation:spin .8s linear infinite;flex:none}
+.spinner.sm{width:13px;height:13px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* forms */
+.inp{width:100%;padding:9px 12px;border:1px solid var(--border-2);border-radius:10px;background:var(--bg);outline:0;font-size:14px}
+.inp.mono{font-size:13px}
+.inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
+.lbl{display:block;font-size:13px;font-weight:560;margin:14px 0 6px}
+.lbl .faint{font-weight:400;color:var(--faint);margin-left:6px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:14px}
+.form-row{display:flex;gap:8px;margin-top:16px}
+.form-row .inp{flex:1;min-width:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:36px;padding:0 14px;border-radius:10px;border:1px solid var(--border-2);background:var(--raised);font-size:14px;font-weight:560;white-space:nowrap}
+.btn:hover{border-color:var(--faint)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+.btn.ghost{border-color:transparent;background:none;color:var(--muted)}
+.btn.ghost:hover{background:var(--hover);color:var(--text)}
+.btn.sm{height:30px;padding:0 10px;font-size:13px}
+.btn:disabled{opacity:.6}
+.btn svg{width:16px;height:16px}
+.form-err{color:var(--bad);font-size:13px;margin:10px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.form-err:empty{display:none}
+.log{margin:14px 0 0;max-height:230px;overflow:auto;background:var(--code);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:11.5px;line-height:1.55;color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere}
+.more{margin-top:14px}
+.more>summary{cursor:pointer;color:var(--muted);font-size:13.5px;width:max-content}
+.more>summary:hover{color:var(--text)}
+
+/* messages */
+.msg{margin:22px 0 0}
+.msg.user{display:flex;flex-direction:column;align-items:flex-end}
+.msg.user+.msg{margin-top:8px}
+.bubble{background:var(--user);padding:10px 16px;border-radius:18px 18px 6px 18px;max-width:min(85%,640px);white-space:pre-wrap;overflow-wrap:anywhere}
+.actions{display:flex;align-items:center;gap:2px;margin-top:4px;min-height:30px;opacity:0;transition:opacity .15s}
+.msg:hover .actions,.msg:focus-within .actions,.msg.last .actions{opacity:1}
+.msg.streaming .actions{visibility:hidden}
+.msg.assistant:not(.last) [data-mact=regen]{display:none}
+.act{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:7px;color:var(--faint)}
+.act:hover{background:var(--hover);color:var(--text)}
+.act svg{width:16px;height:16px}
+.meta{color:var(--faint);font-size:12px;margin-left:8px;font-variant-numeric:tabular-nums}
+.think{margin:0 0 12px;border-left:2px solid var(--border-2);padding-left:14px}
+.think>summary{list-style:none;cursor:pointer;color:var(--muted);font-size:13.5px;display:inline-flex;align-items:center;gap:6px;user-select:none}
+.think>summary::-webkit-details-marker{display:none}
+.think>summary:hover{color:var(--text)}
+.think>summary svg{width:14px;height:14px;transition:transform .15s}
+.think[open]>summary svg{transform:rotate(90deg)}
+.think:not([data-done]) .lbl{animation:pulse 1.6s ease-in-out infinite}
+.think-body{margin-top:8px;color:var(--muted);font-size:14px;line-height:1.55;white-space:pre-wrap;max-height:320px;overflow-y:auto;overflow-wrap:anywhere}
+/* tool calls */
+.tools{display:flex;flex-direction:column;gap:8px;margin:2px 0 4px}
+.tool{border:1px solid var(--border);border-radius:12px;background:var(--raised);overflow:hidden}
+.tool.wait{border-color:color-mix(in srgb,var(--warn) 45%,var(--border))}
+.tool.err{border-color:color-mix(in srgb,var(--bad) 35%,var(--border))}
+.tool-head{display:flex;align-items:center;gap:8px;padding:9px 12px;font-size:13.5px;font-weight:560}
+.tool-head svg{width:16px;height:16px;color:var(--muted)}
+.tool-head .lbl{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tool-stat{font-weight:450;font-size:12.5px;color:var(--faint);display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.tool-stat.ok{color:var(--ok)}.tool-stat.bad{color:var(--bad)}.tool-stat.wait{color:var(--warn)}
+.tool-arg{margin:0;padding:10px 12px;border-top:1px solid var(--border);background:var(--code);font-size:12.5px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;max-height:200px;overflow:auto}
+.tool-approve{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--border);align-items:center;flex-wrap:wrap}
+.tool-approve .warn{flex:1;min-width:120px;font-size:12.5px;color:var(--muted)}
+.tool-out{border-top:1px solid var(--border)}
+.tool-out>summary{list-style:none;cursor:pointer;padding:8px 12px;font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.tool-out>summary::-webkit-details-marker{display:none}
+.tool-out>summary:hover{color:var(--text)}
+.tool-out>summary svg{width:13px;height:13px;transition:transform .15s}
+.tool-out[open]>summary svg{transform:rotate(90deg)}
+.tool-out pre{margin:0;padding:0 12px 12px;font-size:12px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;max-height:300px;overflow:auto;color:var(--muted)}
+.tool-img{display:block;max-width:100%;border-top:1px solid var(--border)}
+/* image attachments */
+.attachments{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
+.attachments .thumb{position:relative;width:60px;height:60px;border-radius:10px;overflow:hidden;border:1px solid var(--border-2)}
+.attachments .thumb img{width:100%;height:100%;object-fit:cover}
+.attachments .thumb button{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;display:flex;align-items:center;justify-content:center}
+.attachments .thumb button svg{width:11px;height:11px;stroke-width:2.5}
+.chip.icon-only{padding:0;width:32px;justify-content:center}
+.msg-imgs{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;justify-content:flex-end;max-width:min(85%,640px)}
+.msg-imgs img{max-width:200px;max-height:200px;border-radius:12px;border:1px solid var(--border)}
+.note{margin-top:10px;font-size:13.5px;color:var(--muted)}
+.note.err{color:var(--bad);background:color-mix(in srgb,var(--bad) 7%,transparent);border:1px solid color-mix(in srgb,var(--bad) 25%,transparent);border-radius:10px;padding:10px 12px;white-space:pre-wrap;overflow-wrap:anywhere}
+.typing{display:inline-flex;gap:5px;padding:10px 0}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--faint);animation:blink 1.2s infinite}
+.typing i:nth-child(2){animation-delay:.2s}.typing i:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+
+/* markdown */
+.md{overflow-wrap:anywhere}
+.md>:first-child{margin-top:0}.md>:last-child{margin-bottom:0}
+.md p{margin:0 0 .85em}
+.md h1,.md h2,.md h3,.md h4,.md h5,.md h6{line-height:1.3;margin:1.3em 0 .5em;font-weight:650;letter-spacing:-.01em}
+.md h1{font-size:1.4em}.md h2{font-size:1.22em}.md h3{font-size:1.08em}.md h4,.md h5,.md h6{font-size:1em}
+.md ul,.md ol{margin:0 0 .85em;padding-left:1.5em}
+.md li{margin:.25em 0}
+.md li>ul,.md li>ol{margin:.2em 0 .3em}
+.md li>p{margin:.3em 0}
+.md blockquote{margin:0 0 .85em;padding:1px 0 1px 14px;border-left:3px solid var(--border-2);color:var(--muted)}
+.md hr{border:0;border-top:1px solid var(--border);margin:1.4em 0}
+.md :not(pre)>code{background:var(--code);border:1px solid var(--border);border-radius:5px;padding:.05em .35em;font-size:.86em}
+.md .code{margin:0 0 .9em;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--code)}
+.code-bar{display:flex;align-items:center;justify-content:space-between;padding:3px 6px 3px 12px;background:var(--code-bar);font:12px var(--mono);color:var(--muted)}
+.code-copy{display:inline-flex;align-items:center;gap:5px;padding:3px 7px;border-radius:6px;font:12px var(--sans);color:var(--muted)}
+.code-copy:hover{background:var(--hover);color:var(--text)}
+.code-copy svg{width:14px;height:14px}
+.md pre{margin:0;padding:12px 14px;overflow-x:auto;font-size:12.5px;line-height:1.55}
+.table-wrap{overflow-x:auto;margin:0 0 .9em}
+.md table{border-collapse:collapse;font-size:14px}
+.md th,.md td{border:1px solid var(--border);padding:6px 10px;text-align:left;vertical-align:top}
+.md th{background:var(--code);font-weight:600}
+
+/* composer */
+.composer-wrap{padding:0 24px 14px}
+.banner{max-width:800px;margin:0 auto 10px;display:flex;align-items:center;gap:10px;padding:8px 8px 8px 14px;border:1px solid var(--border);border-radius:12px;background:var(--raised);font-size:13.5px}
+.banner .txt{flex:1;color:var(--muted)}
+.composer{max-width:800px;margin:0 auto;background:var(--raised);border:1px solid var(--border-2);border-radius:22px;box-shadow:var(--shadow);padding:12px 12px 10px 18px;transition:border-color .15s}
+.composer:focus-within{border-color:var(--faint)}
+.composer textarea{display:block;width:100%;border:0;outline:0;background:transparent;resize:none;line-height:1.5;max-height:240px;padding:2px 0;font-size:15px}
+.composer textarea::placeholder{color:var(--faint)}
+.composer-row{display:flex;align-items:center;gap:8px;margin-top:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px 0 10px;border-radius:999px;border:1px solid var(--border-2);font-size:13px;color:var(--muted)}
+.chip:hover{color:var(--text)}
+.chip[aria-pressed=true]{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 40%,transparent);color:var(--accent)}
+.chip svg{width:16px;height:16px}
+.send{width:36px;height:36px;border-radius:50%;background:var(--text);color:var(--bg);display:flex;align-items:center;justify-content:center;margin-left:auto}
+.send:disabled{background:var(--border-2);color:var(--faint)}
+.send svg{stroke-width:2.2}
+.foot-hint{max-width:800px;margin:8px auto 0;text-align:center;font-size:12px;color:var(--faint)}
+
+/* settings drawer */
+.scrim{position:fixed;inset:0;background:rgba(10,8,5,.3);opacity:0;pointer-events:none;transition:opacity .2s;z-index:20}
+.scrim.show{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100vw);background:var(--bg);border-left:1px solid var(--border);z-index:21;transform:translateX(100%);visibility:hidden;transition:transform .22s ease,visibility 0s .22s;display:flex;flex-direction:column}
+.drawer.open{transform:none;visibility:visible;transition:transform .22s ease}
+.drawer-head{display:flex;align-items:center;padding:14px 12px 4px 24px}
+.drawer-head h2{font-size:17px;margin:0;flex:1;font-weight:620}
+.drawer-body{flex:1;overflow-y:auto;padding:0 24px 8px}
+.dsec{padding:18px 0;border-bottom:1px solid var(--border)}
+.dsec:last-child{border-bottom:0}
+.dsec h3{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--faint);margin:0 0 12px;font-weight:650}
+.drawer .card{box-shadow:none;border:0;padding:0;background:none;max-width:none}
+.drawer .card-head h2{font-size:15px}
+.drawer .card-text{font-size:14px}
+.model-name{font-weight:620;font-size:15px;overflow-wrap:anywhere}
+.model-sub{color:var(--muted);font-size:13px;margin-top:2px;overflow-wrap:anywhere}
+.kv{font-size:14px;overflow-wrap:anywhere}.kv .k{color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--border-2);border-radius:10px;overflow:hidden;background:var(--bg)}
+.seg button{padding:7px 16px;font-size:13.5px;font-weight:540;color:var(--muted);border-right:1px solid var(--border)}
+.seg button:last-child{border-right:0}
+.seg button:hover{background:var(--hover);color:var(--text)}
+.seg button[aria-pressed=true]{background:var(--accent);color:var(--on-accent)}
+.range-row{display:flex;align-items:center;gap:12px}
+.range-row input{flex:1;accent-color:var(--accent)}
+.val{font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted);min-width:36px;text-align:right}
+.sm-note{font-size:12.5px;color:var(--faint);margin:8px 0 0;line-height:1.5}
+.sum{cursor:pointer;font-size:14px;font-weight:560}
+.drawer-foot{padding:14px 24px 18px;border-top:1px solid var(--border)}
+.foot-btns{display:flex;gap:8px}
+.foot-btns .btn{flex:1}
+.btn.danger{color:var(--bad)}
+.btn.danger-fill{background:var(--bad);border-color:var(--bad);color:#fff}
+.stop-confirm{margin-bottom:14px;padding:12px 14px;border:1px solid color-mix(in srgb,var(--bad) 35%,transparent);border-radius:12px;background:color-mix(in srgb,var(--bad) 6%,transparent);font-size:13.5px;line-height:1.5}
+.stop-confirm p{margin:0}
+.stop-confirm code{font-size:.9em}
+.stop-confirm .row{margin-top:10px}
+
+.toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,12px);background:var(--text);color:var(--bg);padding:9px 16px;border-radius:10px;font-size:13.5px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:30;max-width:calc(100vw - 32px)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.bye{height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;gap:4px}
+.bye h1{font-size:24px;margin:18px 0 4px;font-weight:620}
+.bye p{color:var(--muted);max-width:420px;margin:0}
+
+.only-narrow{display:none}
+[data-guest] .host-only,html:not([data-guest]) .guest-only{display:none!important}
+@media (max-width:760px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .sidebar{position:fixed;inset:0 auto 0 0;width:min(300px,86vw);z-index:22;transform:translateX(-100%);visibility:hidden;transition:transform .22s ease,visibility 0s .22s}
+  .sidebar.open{transform:none;visibility:visible;transition:transform .22s ease}
+  .only-narrow{display:flex}
+  .topbar{padding:8px 10px}
+  .thread-inner{padding:6px 16px 24px}
+  .composer-wrap{padding:0 12px 12px}
+  .foot-hint{display:none}
+  .card{padding:18px 16px}
+  .form-row{flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><img class="logo" src="/logo.png" alt="">fikirmatik.ai</div>
+    <button class="new-chat" id="newChat" data-icon="plus">New chat</button>
+    <nav class="chat-list" id="chatList" aria-label="Chats"></nav>
+    <div class="side-foot"><button class="side-btn" data-act="settings" data-icon="sliders">Settings</button></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="icon-btn only-narrow" id="menuBtn" data-icon="menu" title="Chats" aria-label="Chats"></button>
+      <button class="pill" id="pill" data-act="settings" title="Model and connection"><span class="dot"></span><span class="label">Checking…</span></button>
+      <div class="spacer"></div>
+      <button class="icon-btn" data-act="settings" data-icon="sliders" title="Settings" aria-label="Settings"></button>
+    </header>
+    <section class="thread" id="thread"><div class="thread-inner" id="messages"></div></section>
+    <footer class="composer-wrap">
+      <div class="banner" id="banner" hidden></div>
+      <form class="composer" id="composer">
+        <div class="attachments" id="attachments" hidden></div>
+        <textarea id="input" rows="1" placeholder="Message the model…" aria-label="Message"></textarea>
+        <div class="composer-row">
+          <button type="button" class="chip icon-only" id="attach" data-icon="clip" title="Attach an image for the model to look at" aria-label="Attach image"></button>
+          <button type="button" class="chip" id="think" data-icon="bulb" aria-pressed="true" title="Let the model reason before it answers: slower, usually better on hard questions">Think</button>
+          <button type="button" class="chip host-only" id="tools" data-icon="tool" aria-pressed="false" title="Let the model search the web, read pages and run commands on this Mac" hidden>Tools</button>
+          <input type="file" id="fileInput" accept="image/*" multiple hidden>
+          <button type="submit" class="send" id="send" title="Send" aria-label="Send"></button>
+        </div>
+      </form>
+      <div class="foot-hint">Enter to send · Shift+Enter for a new line · <span class="host-only">chats are saved in the <span class="mono">chats</span> folder</span><span class="guest-only">chats are saved on the host’s Mac</span></div>
+    </footer>
+  </main>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Settings">
+  <div class="drawer-head"><h2>Settings</h2><button class="icon-btn" id="closeDrawer" data-icon="close" title="Close" aria-label="Close"></button></div>
+  <div class="drawer-body">
+    <section class="dsec"><h3>Model</h3><div class="card panel" id="drawerModel"></div></section>
+    <section class="dsec host-only" id="switchSec" hidden><h3>Load a different model</h3><div class="panel" id="drawerSwitch"></div></section>
+    <section class="dsec host-only"><h3>Pod</h3><div class="panel" id="drawerPod"></div></section>
+    <section class="dsec host-only"><h3>Sharing</h3><div id="drawerShare"></div></section>
+    <section class="dsec host-only" id="toolsSec" hidden>
+      <h3>Tools</h3>
+      <p class="card-text" style="margin:0 0 4px">Let the model act on its own: search the web, read pages, and run commands on this Mac. Turn the whole feature on with the <b>Tools</b> button under the message box.</p>
+      <div id="toolList"></div>
+      <label class="lbl" style="display:flex;align-items:flex-start;gap:10px;margin-top:16px;cursor:pointer">
+        <input type="checkbox" id="autoRun" style="margin-top:3px">
+        <span>Run commands without asking<span class="faint" style="display:block;margin-left:0;margin-top:2px;font-weight:400">Off by default. When on, the model runs shell commands on this Mac with no approval — including anything it's told to run by a web page it read. Leave off unless you're watching.</span></span>
+      </label>
+    </section>
+    <section class="dsec">
+      <h3>Replies</h3>
+      <label class="lbl" for="sys" style="margin-top:0">System prompt<span class="faint">sent at the start of every chat</span></label>
+      <textarea class="inp" id="sys" rows="4" placeholder="None"></textarea>
+      <div class="row" id="sysResetRow" hidden style="margin-top:8px"><button class="btn sm" id="sysReset">Use the one from .env</button></div>
+      <label class="lbl" for="effort">Thinking effort<span class="faint">when Think is on — lower is faster and less long-winded</span></label>
+      <div class="seg" id="effortSeg" role="group" aria-label="Thinking effort">
+        <button type="button" data-effort="low">Low</button>
+        <button type="button" data-effort="medium">Medium</button>
+        <button type="button" data-effort="xhigh">High</button>
+      </div>
+      <p class="sm-note">For a quick answer with no thinking at all, turn off the <b>Think</b> button under the message box.</p>
+      <label class="lbl">Temperature<span class="faint" id="tempNote"></span></label>
+      <div class="range-row"><input type="range" id="temp" min="0" max="1.5" step="0.05" aria-label="Temperature"><span class="val" id="tempVal"></span><button class="btn sm ghost" id="tempReset" hidden>Reset</button></div>
+      <label class="lbl" for="maxTok">Longest reply<span class="faint">in tokens; empty means no limit</span></label>
+      <input class="inp" id="maxTok" type="number" min="1" step="256" placeholder="No limit">
+    </section>
+    <section class="dsec host-only">
+      <details id="logBox"><summary class="sum">Server log</summary><pre class="log" data-live="log"></pre><div class="row"><button class="btn sm" data-act="recheck">Refresh</button></div></details>
+    </section>
+  </div>
+  <div class="drawer-foot host-only">
+    <div class="stop-confirm" id="stopConfirm" hidden>
+      <p><b>Stop the pod?</b> GPU billing ends within a minute. Everything running on it stops<span id="stopSessions"></span>.
+        Your <code>/workspace</code> files and models are kept. Start it again with <b>Start pod</b> here, or from RunPod’s console.</p>
+      <div class="row"><button class="btn danger-fill" data-act="stop-pod">Stop the pod</button><button class="btn ghost" data-act="stop-pod-cancel">Cancel</button></div>
+      <p class="form-err" id="stopErr"></p>
+    </div>
+    <div class="foot-btns">
+      <button class="btn" data-act="quit" data-icon="power">Quit</button>
+      <button class="btn danger" data-act="stop-pod-ask" id="stopPodBtn">Stop pod and quit</button>
+    </div>
+    <p class="sm-note" id="footNote"></p>
+  </div>
+</aside>
+<datalist id="modelOptions"></datalist>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+'use strict';
+const $ = (sel, root = document) => root.querySelector(sel);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+const svg = d => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
+const ICON = {
+  plus: svg('<path d="M12 5v14M5 12h14"/>'),
+  send: svg('<path d="M12 19V5M5.5 11.5 12 5l6.5 6.5"/>'),
+  stop: svg('<rect x="7" y="7" width="10" height="10" rx="2" fill="currentColor" stroke="none"/>'),
+  copy: svg('<rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V6.5A2.5 2.5 0 0 1 7.5 4H15"/>'),
+  check: svg('<path d="M5 12.5 9.5 17 19 7.5"/>'),
+  redo: svg('<path d="M20 12a8 8 0 1 1-2.3-5.7M20 4.5V9h-4.5"/>'),
+  edit: svg('<path d="M4 20h4L19 9l-4-4L4 16v4Z"/>'),
+  trash: svg('<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>'),
+  sliders: svg('<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>'),
+  menu: svg('<path d="M4 7h16M4 12h16M4 17h16"/>'),
+  close: svg('<path d="M6 6l12 12M18 6 6 18"/>'),
+  bulb: svg('<path d="M9.5 18h5M10.5 21h3M12 3a6 6 0 0 0-3.6 10.8c.7.5 1.1 1.3 1.1 2.1v.1h5v-.1c0-.8.4-1.6 1.1-2.1A6 6 0 0 0 12 3Z"/>'),
+  chev: svg('<path d="m9 6 6 6-6 6"/>'),
+  power: svg('<path d="M12 3v8M6.4 6.4a8 8 0 1 0 11.2 0"/>'),
+  tool: svg('<path d="M14.5 5.5a3.5 3.5 0 0 1-4.6 4.6L5 15l4-4 4.9-4.9A3.5 3.5 0 0 1 14.5 5.5Z"/><path d="m14 10 5 5"/>'),
+  search: svg('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>'),
+  globe: svg('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18"/>'),
+  terminal: svg('<rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="m7 9 3 3-3 3M13 15h4"/>'),
+  play: svg('<path d="M7 5.5v13l11-6.5-11-6.5Z" fill="currentColor" stroke="none"/>'),
+  code: svg('<path d="m8 8-4 4 4 4M16 8l4 4-4 4M13 6l-2 12"/>'),
+  file: svg('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z"/><path d="M14 3v5h5"/>'),
+  image: svg('<rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m4 18 5-5 4 4 3-3 4 4"/>'),
+  memory: svg('<path d="M12 3a4 4 0 0 0-4 4v1a3 3 0 0 0 0 6 3 3 0 0 0 4 2.8A3 3 0 0 0 16 14a3 3 0 0 0 0-6V7a4 4 0 0 0-4-4Z"/>'),
+  clip: svg('<path d="M21 11.5 12 20a5 5 0 0 1-7-7l8.5-8.5a3.3 3.3 0 0 1 4.7 4.7L9 16.5a1.7 1.7 0 0 1-2.4-2.4L15 6"/>'),
+};
+// Qwen3.8's recommended sampling per mode (model card), as in chat_client.py.
+const SAMPLING = {
+  true: {temperature: 1.0, top_p: 0.95, top_k: 20},
+  false: {temperature: 0.7, top_p: 0.8, top_k: 20, presence_penalty: 1.5},
+};
+
+// ---------- state ----------
+function readStore(k) { try { return JSON.parse(localStorage.getItem(k)) || {}; } catch { return {}; } }
+// temperature: null follows SAMPLING for the current mode
+const prefs = Object.assign({system: null, temperature: null, maxTokens: '', think: true, effort: 'low', lastServe: null,
+  toolsOn: true, tools: {}, autoRun: false}, readStore('labchat.prefs'));
+function savePrefs() { try { localStorage.setItem('labchat.prefs', JSON.stringify(prefs)); } catch {} }
+
+const S = {status: null, config: {}, box: null, boxAt: 0, starting: 0, chats: [], chat: null, stream: null, err: {}, draft: {}, toolDefs: []};
+const MAX_TOOL_STEPS = 16;  // how many rounds of tool use one turn may take before we stop
+// Tools the model may use this turn: the feature is on, we're the host page, and the tool isn't switched off.
+const toolDef = name => S.toolDefs.find(t => t.name === name);
+const enabledTools = () => GUEST || !prefs.toolsOn ? [] : S.toolDefs.filter(t => prefs.tools[t.name] !== false);
+const view = new WeakMap();  // message -> its element
+const GUEST = document.documentElement.hasAttribute('data-guest');  // the chat-only page on Tailscale (ui.py GuestHandler)
+
+const errText = d => d?.error?.message || (typeof d?.error === 'string' ? d.error : '') || d?.message || '';
+async function api(path, method = 'GET', body) {
+  const opt = {method, headers: {}};
+  if (body !== undefined) { opt.headers['Content-Type'] = 'application/json'; opt.body = JSON.stringify(body); }
+  const r = await fetch(path, opt);
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(errText(data) || `${r.status} ${r.statusText}`);
+  return data;
+}
+const friendly = msg => /POD_HOST/.test(msg) ? 'fikirmatik.ai needs your pod’s address for this. Add it under Pod in Settings.' : msg;
+
+// ---------- connection status ----------
+let statusTimer;
+async function refreshStatus() {
+  clearTimeout(statusTimer);
+  const was = S.status?.state;
+  try { S.status = await api('/api/status'); } catch { S.status = {state: 'ui_down'}; }
+  const st = S.status;
+  if (was === 'ready' && st.state !== 'ready') S.box = null;  // what the pod said while serving is stale now
+  if (st.state === 'ready') {
+    if (prefs.lastServe?.model !== st.root || prefs.lastServe?.name !== st.model) {
+      prefs.lastServe = {model: st.root, name: st.model}; savePrefs(); fillModelOptions();
+    }
+  }
+  if (st.state === 'no_model') refreshBox();
+  renderStatus();
+  statusTimer = setTimeout(refreshStatus, st.state === 'ready' ? 10000 : 3000);
+}
+
+let boxBusy = false;
+async function refreshBox(force) {
+  if (boxBusy || (!force && Date.now() - S.boxAt < 6000)) return;
+  boxBusy = true;
+  const asked = Date.now();
+  try { S.box = await api('/api/box'); } catch (e) { S.box = {error: e.message}; }
+  S.boxAt = asked; boxBusy = false;
+  renderStatus();
+}
+
+// One word for where things stand; drives the pill, the card and the banner.
+function gate() {
+  const st = S.status?.state || 'checking', rp = S.status?.runpod;
+  if (rp?.configured && !['ready', 'no_model'].includes(st)) {  // nothing answers through the tunnel: RunPod says why
+    if (rp.job?.busy) return 'pod_starting';
+    if (rp.known && !rp.running) return rp.job?.offer ? 'pod_offer' : 'pod_off';
+  }
+  if (st !== 'no_model') return st;
+  const b = S.box, since = Date.now() - S.starting;
+  if (since < 120000 && (!b || S.boxAt < S.starting || (!b.loading && since < 20000))) return 'starting';
+  if (!b) return 'box_checking';
+  if (b.error) return /POD_HOST/.test(b.error) ? 'box_nopod' : 'box_error';
+  if (b.loading) return 'loading';
+  return b.session && b.exited ? 'crashed' : 'idle';
+}
+const PILL = {
+  checking: ['', 'Checking…'], ui_down: ['bad', 'fikirmatik.ai stopped'], no_pod: ['', 'Set up your pod'],
+  connecting: ['warn', 'Connecting…'], offline: ['bad', 'Pod unreachable'], box_checking: ['warn', 'Checking the pod…'],
+  box_nopod: ['', 'No model running'], box_error: ['bad', 'No model running'], starting: ['warn', 'Starting model…'],
+  loading: ['warn', 'Loading model…'], idle: ['', 'No model running'], crashed: ['bad', 'Model stopped'],
+  host_offline: ['', 'No model running'],
+  pod_off: ['', 'Pod stopped'], pod_starting: ['warn', 'Starting pod…'], pod_offer: ['bad', 'No GPU free'],
+};
+if (GUEST) PILL.ui_down = ['bad', 'Can’t reach fikirmatik.ai'];  // for a guest, the Mac is asleep or out of reach
+const BANNER_ACTION = {
+  offline: ['connect', 'Reconnect'], no_pod: ['settings', 'Set up'], box_nopod: ['settings', 'Set up'],
+  idle: ['settings', 'Start a model'], crashed: ['settings', 'Details'], box_error: ['settings', 'Details'],
+  loading: ['settings', 'Show progress'], starting: ['settings', 'Show progress'],
+  pod_off: ['pod-start', 'Start pod'], pod_starting: ['settings', 'Show progress'], pod_offer: ['settings', 'Options'],
+};
+const usd = n => n ? `$${n.toFixed(2)}/hr` : '';
+const LIVE_POD = ['RUNNING', 'PROVISIONING', 'STARTING'];
+const fmtCtx = n => !n ? '' : n >= 1024 ? `${Math.round(n / 1024)}K` : String(n);
+const fmtSecs = ms => ms < 950 ? 'under a second' : ms < 60000 ? `${Math.round(ms / 1000)}s` : `${Math.floor(ms / 60000)}m ${Math.round(ms % 60000 / 1000)}s`;
+
+function renderStatus() {
+  const g = gate(), st = S.status || {}, ready = g === 'ready';
+  const [dot, label] = ready ? ['ok', st.model] : PILL[g];
+  $('#pill').innerHTML = `<span class="dot ${dot}"></span><span class="label">${esc(label)}</span>${ready && st.max_len ? `<span class="sub">${fmtCtx(st.max_len)}</span>` : ''}`;
+  document.title = ready ? `${st.model} · fikirmatik.ai` : 'fikirmatik.ai';
+  $('#input').placeholder = ready ? `Message ${st.model}…` : 'The model isn’t ready yet…';
+  updateSend();
+  // Only offer to stop a pod that's on: RunPod knows when there's a key; otherwise, one that answers is on.
+  const rp = st.runpod;
+  $('#stopPodBtn').hidden = !(rp?.configured && rp.known ? rp.running : ['ready', 'no_model'].includes(st.state));
+  if ($('#stopPodBtn').hidden) $('#stopConfirm').hidden = true;
+  $('#footNote').textContent = !$('#stopPodBtn').hidden
+    ? 'Quit closes this app and the tunnel it opened; the pod keeps running and billing. Stop pod and quit also shuts the pod down.'
+    : rp?.configured && rp.known ? 'Quit closes this app. Your pod is off, so nothing is billing by the hour.' : 'Quit closes this app and the tunnel it opened.';
+
+  const hello = $('#hello');
+  if (hello) {
+    hello.hidden = !ready; $('#gate').hidden = ready;
+    if (ready) $('#helloSub').textContent = `Chatting with ${st.model}${st.max_len ? ` · ${fmtCtx(st.max_len)} context` : ''}`;
+  }
+  renderPanel($('#gate'), g, false);
+  renderPanel($('#drawerModel'), g, true);
+  renderSwitch(g);
+  renderPod();
+  renderShare();
+
+  const banner = $('#banner'), show = !ready && !!S.chat?.messages.length;
+  banner.hidden = !show;
+  if (show) {
+    const [bdot, btxt] = PILL[g], a = BANNER_ACTION[g];
+    banner.innerHTML = `<span class="dot ${bdot}"></span><span class="txt">${esc(btxt)}</span>${a ? `<button class="btn sm" data-act="${a[0]}">${a[1]}</button>` : ''}`;
+  }
+  document.querySelectorAll('[data-live=log]').forEach(pre => {
+    const stick = pre.scrollHeight - pre.scrollTop - pre.clientHeight < 30;
+    pre.textContent = S.box?.log || (S.box ? '(the log is empty)' : '(open this while the pod is connected)');
+    if (stick) pre.scrollTop = pre.scrollHeight;
+  });
+}
+
+// Rebuild a panel only when what it shows changes, so typing into it isn't wiped by polling.
+function renderPanel(host, g, inDrawer) {
+  if (!host) return;
+  const st = S.status || {};
+  const key = [g, st.model, st.tunnel?.ours, st.tunnel?.error, st.pod?.host, S.box?.error, S.box?.exit_code, JSON.stringify(S.err),
+    JSON.stringify(st.runpod || {})].join('|');
+  if (host.dataset.key === key) return;
+  host.dataset.key = key;
+  host.innerHTML = panelHTML(g, inDrawer);
+}
+
+const head = (kind, title) => `<div class="card-head">${kind === 'spin' ? '<span class="spinner"></span>' : `<span class="sig ${kind}"></span>`}<h2>${title}</h2></div>`;
+const para = html => `<p class="card-text">${html}</p>`;
+const errHTML = k => `<p class="form-err">${esc(S.err[k] || '')}</p>`;
+
+function panelHTML(g, inDrawer) {
+  const st = S.status || {}, pod = st.pod || {};
+  const addr = pod.host ? `${pod.host}:${pod.port || 22}` : '';
+  switch (g) {
+    case 'checking': return head('spin', 'Checking the connection…');
+    case 'ui_down': return GUEST
+      ? head('bad', 'Can’t reach fikirmatik.ai') + para('The Mac it runs on may be asleep or offline, or Tailscale is off on this device. This page reconnects by itself.')
+      : head('bad', 'fikirmatik.ai has stopped') + para('Open the fikirmatik.ai app again (or run <code>./gpu.sh ui</code>) and this page picks it back up.');
+    case 'host_offline': return head('', 'No model is running') + para('Chat opens by itself as soon as the person who shared this page starts one.');
+    case 'no_pod': return head('', 'Connect to your GPU pod') + (inDrawer ? para('Add your pod’s SSH command under Pod, below.')
+      : para('Paste the SSH command from your provider’s connect panel. On RunPod it’s under <b>SSH over exposed TCP</b>.') + podForm('Connect'));
+    case 'connecting': return head('spin', 'Connecting to the pod…') + (addr ? para(esc(addr)) : '');
+    case 'offline': return offlineHTML(st, addr, inDrawer);
+    case 'box_checking': return head('spin', 'Connected. Looking for a model on the pod…');
+    case 'box_nopod': return head('', 'No model is running') + para('The tunnel is open, but fikirmatik.ai doesn’t have your pod’s address yet, so it can’t start a model.')
+      + (inDrawer ? para('Add it under Pod, below.') : podForm('Save'));
+    case 'box_error': return head('bad', 'No model is running') + para('fikirmatik.ai couldn’t check the pod:') + `<pre class="log">${esc(S.box.error)}</pre>`
+      + '<div class="row"><button class="btn" data-act="recheck">Check again</button></div>';
+    case 'starting': return head('spin', 'Starting the model…') + para('Copying the scripts to the pod and starting vLLM.');
+    case 'loading': return head('spin', 'Loading the model') + para('This takes a few minutes. Chat opens by itself when it’s ready.')
+      + '<pre class="log" data-live="log"></pre><div class="row"><button class="btn ghost" data-act="stop-model">Cancel loading</button></div>' + errHTML('stop');
+    case 'idle': return head('', 'No model is running') + para('The pod is connected. Choose what to load onto its GPU.') + serveForm('Start model');
+    case 'crashed': return head('bad', 'The model stopped') + para(`vLLM exited${S.box.exit_code ? ` with code ${S.box.exit_code}` : ''}. The end of its log:`)
+      + '<pre class="log" data-live="log"></pre>' + serveForm('Start again');
+    case 'pod_off': {
+      const rp = st.runpod, c = [...new Set(rp.pods.map(p => p.cost).filter(Boolean))].sort((a, b) => a - b);
+      const bill = !c.length ? 'by the hour' : c.length === 1 ? usd(c[0]) : `${usd(c[0])} to ${usd(c[c.length - 1])}, depending on which of your pods gets a GPU,`;
+      return head('', 'Your pod is stopped') + para(`Start it to chat. It bills ${bill} while it runs; stop it when you’re done.`)
+        + (rp.job?.error ? `<p class="form-err">${esc(rp.job.error)}</p>` : '')
+        + '<div class="row"><button class="btn primary" data-act="pod-start">Start pod</button></div>';
+    }
+    case 'pod_starting': return head('spin', 'Starting your pod…') + para(esc(st.runpod.job.step || ''))
+      + para('This takes a minute or two. Once it’s connected, you pick a model to load.');
+    case 'pod_offer': return head('bad', 'No GPU is free for your pods')
+      + para('Someone else is using the GPU on each of your pods’ machines. A new pod can take any free GPU in the same data center, and since your files live on the network volume, it works the same.')
+      + para(`It uses ${st.runpod.job.offer.map(o => `${esc(o.gpu)} (${usd(o.cost)})`).join(' or ')}, the cheapest that’s free.`)
+      + '<div class="row"><button class="btn primary" data-act="pod-create">Create a new pod</button><button class="btn ghost" data-act="pod-start">Try my pods again</button></div>';
+    case 'ready': return `<div class="model-name">${esc(st.model)}</div><div class="model-sub mono">${esc(st.root)}</div>
+      <div class="model-sub">${st.max_len ? `${fmtCtx(st.max_len)} tokens of context` : ''}${addr ? ` · pod ${esc(addr)}` : ''}</div>`
+      + (GUEST ? '' : `<div class="row"><button class="btn" data-act="stop-model">Stop model</button>${st.tunnel?.ours ? '<button class="btn ghost" data-act="disconnect">Disconnect</button>' : ''}</div>${errHTML('stop')}`);
+  }
+  return '';
+}
+
+function offlineHTML(st, addr, inDrawer) {
+  const e = st.tunnel?.error || '';
+  let why = 'The tunnel to the pod closed.', action = '<button class="btn primary" data-act="connect">Try again</button>';
+  if (!e) { why = 'fikirmatik.ai isn’t connected to the pod right now.'; action = '<button class="btn primary" data-act="connect">Connect</button>'; }
+  else if (/IDENTIFICATION HAS CHANGED/i.test(e)) {
+    why = 'This address now belongs to a different machine, most likely because you rented a new pod. Forget the old pod’s key to connect.';
+    action = '<button class="btn primary" data-act="forget">Forget old key and connect</button>';
+  } else if (/Permission denied/i.test(e)) why = 'The pod refused your SSH key. Add the key from <code>./gpu.sh keygen</code> to your provider, then restart the pod.';
+  else if (/refused|timed out|No route|unreachable|resolve|closed by remote|reset by peer/i.test(e)) {
+    why = 'The pod isn’t answering. If you stopped it, start it again in your provider’s console'
+      + (st.runpod?.configured ? '' : ' (or add a RunPod API key under Pod in Settings, and start it from here)')
+      + '. If you rented a new one, paste its SSH command' + (inDrawer ? ' under Pod, below.' : ' below.');
+  }
+  return head('bad', `Can’t reach the pod${addr ? ` at ${esc(addr)}` : ''}`) + para(why) + `<div class="row">${action}</div>`
+    + (e ? `<details class="more"><summary>Details</summary><pre class="log">${esc(e)}</pre></details>` : '')
+    + (inDrawer ? '' : `<details class="more"${S.err.pod ? ' open' : ''}><summary>Use a different pod</summary>${podForm('Save and connect')}</details>`);
+}
+
+const podForm = label => `<div class="form-row"><input class="inp mono" data-field="pod" placeholder="ssh root@203.0.113.7 -p 12345" value="${esc(S.draft.pod || '')}" spellcheck="false" autocomplete="off" aria-label="SSH command"><button class="btn primary" data-act="save-pod">${label}</button></div>${errHTML('pod')}`;
+
+function defaultServe() {
+  return prefs.lastServe?.model ? {model: prefs.lastServe.model, name: prefs.lastServe.name || ''}
+    : {model: S.config.serve_model || S.config.model || '', name: S.config.serve_name || ''};  // SERVE_MODEL / SERVE_NAME in .env
+}
+function serveForm(label) {
+  const d = defaultServe(), model = S.draft.model ?? d.model, name = S.draft.name ?? d.name;
+  return `<label class="lbl">Model<span class="faint">Hugging Face id, or a folder on the pod</span></label>
+    <input class="inp mono" data-field="model" list="modelOptions" value="${esc(model)}" spellcheck="false" autocomplete="off">
+    <label class="lbl">Name in chat<span class="faint">optional</span></label>
+    <input class="inp mono" data-field="name" value="${esc(name)}" placeholder="same as the model’s folder name" spellcheck="false" autocomplete="off">
+    <div class="row"><button class="btn primary" data-act="start-model">${label}</button></div>${errHTML('serve')}`;
+}
+function renderSwitch(g) {
+  if (GUEST) return;
+  $('#switchSec').hidden = g !== 'ready';
+  const host = $('#drawerSwitch'), key = 'k' + (S.err.serve || '');
+  if (g === 'ready' && host.dataset.key !== key) { host.dataset.key = key; host.innerHTML = serveForm('Load this model'); }
+}
+function renderPod() {
+  if (GUEST) return;
+  const pod = S.status?.pod || {}, rp = S.status?.runpod || {}, host = $('#drawerPod');
+  const key = [pod.host, pod.port, pod.user, S.err.pod, S.err.rpkey, JSON.stringify(rp)].join('|');
+  if (host.dataset.key === key) return;
+  host.dataset.key = key;
+  host.innerHTML = runpodHTML(rp)
+    + (pod.host ? `<div class="kv" style="margin-top:12px"><span class="k">Address</span>&nbsp; <span class="mono">${esc(pod.user || 'root')}@${esc(pod.host)} -p ${esc(pod.port || 22)}</span></div>`
+      : '<div class="kv k" style="margin-top:12px">No pod address saved yet.</div>')
+    + (rp.configured ? '<p class="sm-note">Start pod fills this in. To use a pod from elsewhere, paste its SSH command.</p>'
+      : '<p class="sm-note">Paste a new SSH command whenever you rent a different pod. It’s saved in <code>.env</code>, where <code>./gpu.sh</code> reads it too.</p>')
+    + podForm(pod.host ? 'Save' : 'Save and connect');
+}
+function runpodHTML(rp) {
+  if (!rp.configured) return `<p class="sm-note" style="margin-top:0">To start and stop the pod from here, paste a RunPod API key. Make one in RunPod under <b>Settings → API Keys</b> with Read/Write access. It’s saved in <code>.env</code> on this Mac and only sent to RunPod.</p>
+    <div class="form-row"><input class="inp mono" type="password" data-field="rpkey" placeholder="rpa_…" autocomplete="off" spellcheck="false" aria-label="RunPod API key"><button class="btn" data-act="save-key">Save key</button></div>${errHTML('rpkey')}`;
+  const live = (rp.pods || []).find(p => LIVE_POD.includes(p.status));
+  const line = rp.job?.busy ? esc(rp.job.step || 'Starting…') : !rp.known ? 'Asking RunPod…'
+    : live ? `Running on ${esc(live.gpu)} · ${usd(live.cost)}` : `Stopped · ${rp.pods.length} pod${rp.pods.length === 1 ? '' : 's'} on your volume`;
+  return `<div class="kv"><span class="k">RunPod</span>&nbsp; ${line}</div>` + (rp.error ? `<p class="form-err">${esc(rp.error)}</p>` : '')
+    + (rp.known && !live && !rp.job?.busy ? '<div class="row"><button class="btn primary" data-act="pod-start">Start pod</button></div>' : '');
+}
+function renderShare() {
+  const st = S.status, host = $('#drawerShare');
+  if (GUEST || !st || !('guest' in st) || host.dataset.key === String(st.guest)) return;
+  host.dataset.key = String(st.guest);
+  host.innerHTML = st.guest
+    ? `<div class="kv"><span class="k">Guest page</span>&nbsp; <span class="mono">${esc(st.guest)}</span></div>
+      <p class="sm-note">People you share this Mac with on Tailscale can chat there. They can’t reach the pod, the model controls or your chats; theirs are saved in <code>chats/guest</code>.</p>`
+    : '<div class="kv k">Off: Tailscale isn’t running on this Mac.</div><p class="sm-note">Once it is, a chat-only page opens on this Mac’s Tailscale address for people you share the Mac with.</p>';
+}
+function fillModelOptions() {
+  const opts = [...new Set([prefs.lastServe?.model, S.config.serve_model, S.config.model].filter(Boolean))];
+  $('#modelOptions').innerHTML = opts.map(o => `<option value="${esc(o)}"></option>`).join('');
+}
+
+// ---------- connection actions ----------
+function parsePod(s) {
+  const port = s.match(/(?:^|\s)-p\s*(\d+)/)?.[1];
+  let m = s.match(/([a-z_][a-z0-9_-]*)@([A-Za-z0-9.-]+)(?::(\d+))?/i);
+  if (m) return {user: m[1], host: m[2], port: port || m[3] || '22'};
+  m = s.match(/^([A-Za-z0-9.-]+)(?::(\d+))?$/);
+  return m ? {user: 'root', host: m[1], port: port || m[2] || '22'} : {};
+}
+async function withBusy(btn, fn) {
+  const html = btn.innerHTML;
+  btn.disabled = true; btn.innerHTML = `<span class="spinner sm"></span>${html}`;
+  try { return await fn(); } finally { if (btn.isConnected) { btn.disabled = false; btn.innerHTML = html; } }
+}
+async function savePod(btn, scope) {
+  const p = parsePod((scope.querySelector('[data-field=pod]')?.value || '').trim());
+  S.err.pod = '';
+  if (!p.host) { S.err.pod = 'Paste something like: ssh root@203.0.113.7 -p 12345'; return; }
+  try {
+    await withBusy(btn, () => api('/api/pod', 'POST', p));
+    S.draft.pod = ''; S.box = null; toast('Pod address saved');
+  } catch (e) { S.err.pod = e.message; }
+}
+async function startModel(btn, scope) {
+  const model = scope.querySelector('[data-field=model]').value.trim(), name = scope.querySelector('[data-field=name]').value.trim();
+  S.err.serve = '';
+  if (!model) { S.err.serve = 'Which model? Enter a Hugging Face id or a folder on the pod.'; return; }
+  if (S.status?.state === 'ready' && !confirm(`Stop ${S.status.model} and load ${model}? Loading takes a few minutes.`)) return;
+  S.starting = Date.now(); renderStatus();
+  try {
+    await withBusy(btn, () => api('/api/serve', 'POST', {model, name}));
+    prefs.lastServe = {model, name}; savePrefs(); S.draft = {};
+  } catch (e) { S.starting = 0; S.err.serve = friendly(e.message); }
+  refreshBox(true);
+}
+async function stopModel(btn) {
+  if (!confirm('Stop the model? This frees the GPU. The pod itself keeps running (and billing) until you stop it in your provider’s console.')) return;
+  S.err.stop = '';
+  try { await withBusy(btn, () => api('/api/stop-serve', 'POST', {})); S.box = null; S.starting = 0; toast('Model stopped'); }
+  catch (e) { S.err.stop = friendly(e.message); }
+}
+async function quit(ask = true, note = 'You can close this tab. If your pod is still running, it keeps billing until you stop it in your provider’s console.') {
+  if (ask && !confirm('Quit fikirmatik.ai? Your chats are saved.')) return;
+  S.stream?.ctrl.abort();
+  let logo = '';  // copied now: once the server is gone, /logo.png can't load
+  try { const c = document.createElement('canvas'); c.width = c.height = 128; c.getContext('2d').drawImage($('.brand .logo'), 0, 0, 128, 128); logo = c.toDataURL(); } catch {}
+  try { await api('/api/quit', 'POST', {}); } catch {}
+  clearTimeout(statusTimer);
+  document.body.style.overflow = 'auto';
+  document.body.innerHTML = `<div class="bye">${logo ? `<img class="logo big" src="${logo}" alt="">` : ''}<h1>fikirmatik.ai has quit</h1><p>${note}</p></div>`;
+}
+async function saveKey(btn, scope) {
+  const input = scope.querySelector('[data-field=rpkey]'), key = (input?.value || '').trim();
+  S.err.rpkey = '';
+  if (!key) { S.err.rpkey = 'Paste the key first.'; return; }
+  try { await withBusy(btn, () => api('/api/runpod-key', 'POST', {key})); toast('RunPod key saved'); }
+  catch (e) { S.err.rpkey = e.message; }
+}
+async function createPod(btn) {
+  const o = S.status?.runpod?.job?.offer || [];
+  if (!confirm(`Create a new pod on ${o.map(x => `${x.gpu} (${usd(x.cost)})`).join(' or ')}, whichever is free? It bills until you stop it.`)) return;
+  await withBusy(btn, () => api('/api/pod/start', 'POST', {create: true})).catch(e => toast(e.message));
+}
+async function askStopPod() {
+  $('#stopConfirm').hidden = false;
+  $('#stopErr').textContent = '';
+  $('#stopSessions').textContent = '';
+  try {  // name what will be cut off, so nobody loses a long run by surprise
+    const b = await api('/api/box');
+    if (b.sessions?.length) $('#stopSessions').textContent = ` (open sessions on it: ${b.sessions.join(', ')})`;
+  } catch {}
+}
+async function stopPod(btn) {
+  $('#stopErr').textContent = '';
+  try { await withBusy(btn, () => api('/api/stop-pod', 'POST', {})); }
+  catch (e) { $('#stopErr').textContent = friendly(e.message); return; }
+  quit(false, 'Your pod is stopping, so GPU billing ends within a minute. Your <code>/workspace</code> files are kept. To come back, '
+    + (S.status?.runpod?.configured ? 'open fikirmatik.ai and press <b>Start pod</b>.' : 'start the pod in RunPod’s console, then open fikirmatik.ai.'));
+}
+
+document.addEventListener('click', async e => {
+  const t = e.target.closest('[data-act]');
+  if (!t) return;
+  e.preventDefault();
+  const scope = t.closest('.panel') || document;
+  switch (t.dataset.act) {
+    case 'settings': openDrawer(); return;
+    case 'quit': quit(); return;
+    case 'stop-pod-ask': askStopPod(); return;
+    case 'stop-pod-cancel': $('#stopConfirm').hidden = true; return;
+    case 'stop-pod': stopPod(t); return;
+    case 'recheck': S.box = null; renderStatus(); refreshBox(true); return;
+    case 'connect': await withBusy(t, () => api('/api/connect', 'POST', {})).catch(err => toast(err.message)); break;
+    case 'disconnect': await withBusy(t, () => api('/api/disconnect', 'POST', {})).catch(err => toast(err.message)); break;
+    case 'forget': await withBusy(t, () => api('/api/forget', 'POST', {})).catch(err => toast(err.message)); break;
+    case 'save-pod': await savePod(t, scope); break;
+    case 'start-model': await startModel(t, scope); break;
+    case 'stop-model': await stopModel(t); break;
+    case 'pod-start': await withBusy(t, () => api('/api/pod/start', 'POST', {})).catch(err => toast(err.message)); break;
+    case 'pod-create': await createPod(t); break;
+    case 'save-key': await saveKey(t, scope); break;
+  }
+  refreshStatus();
+});
+document.addEventListener('input', e => {
+  const f = e.target.dataset?.field;
+  if (!f || f === 'rpkey') return;  // the API key stays in its box until it's saved
+  S.draft[f] = e.target.value;
+  if (f === 'model') {  // a different model gets its own default name
+    const d = defaultServe(), n = e.target.value.trim() === d.model ? d.name : '';
+    S.draft.name = n;
+    const nameInput = e.target.closest('.panel')?.querySelector('[data-field=name]');
+    if (nameInput) nameInput.value = n;
+  }
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.dataset?.field === 'pod') { e.preventDefault(); e.target.closest('.panel')?.querySelector('[data-act=save-pod]')?.click(); }
+  if (e.key === 'Enter' && e.target.dataset?.field === 'rpkey') { e.preventDefault(); e.target.closest('.panel')?.querySelector('[data-act=save-key]')?.click(); }
+  if (e.key === 'Escape') { closeDrawer(); closeSidebar(); }
+});
+
+// ---------- markdown (model output is escaped first; links only to http/https) ----------
+const RE_FENCE = /^ {0,3}(`{3,}|~{3,})\s*([^`\s]*)/;
+const RE_ITEM = /^(\s*)([-*+]|\d{1,9}[.)])\s+(.*)$/;
+const RE_HR = /^ {0,3}([-*_])(?:\s*\1){2,}\s*$/;
+const RE_HEAD = /^ {0,3}(#{1,6})\s+(.*?)(?:\s+#+)?\s*$/;
+const RE_TSEP = /^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?\s*$/;
+const indentOf = l => l.match(/^\s*/)[0].length;
+const isTable = (lines, i) => lines[i].includes('|') && i + 1 < lines.length && lines[i + 1].includes('|') && RE_TSEP.test(lines[i + 1]);
+const startsBlock = (lines, i) => RE_FENCE.test(lines[i]) || RE_HEAD.test(lines[i]) || RE_HR.test(lines[i]) || /^\s*>/.test(lines[i]) || RE_ITEM.test(lines[i]) || isTable(lines, i);
+
+function renderMarkdown(src) { return mdBlocks(src.replace(/\u0000/g, '').replace(/\r\n?/g, '\n').split('\n')); }
+
+function mdBlocks(lines) {
+  const out = [];
+  let i = 0, m;
+  while (i < lines.length) {
+    const l = lines[i];
+    if (!l.trim()) { i++; continue; }
+    if ((m = l.match(RE_FENCE))) {
+      const close = new RegExp(`^\\s*\\${m[1][0]}{${m[1].length},}\\s*$`), indent = indentOf(l), buf = [];
+      for (i++; i < lines.length && !close.test(lines[i]); i++) buf.push(lines[i].slice(Math.min(indent, indentOf(lines[i]))));
+      i++;  // the closing fence, or the end of a reply that's still streaming
+      out.push(codeBlock(buf.join('\n'), m[2]));
+    } else if ((m = l.match(RE_HEAD))) {
+      out.push(`<h${m[1].length}>${inline(m[2])}</h${m[1].length}>`); i++;
+    } else if (RE_HR.test(l)) {
+      out.push('<hr>'); i++;
+    } else if (isTable(lines, i)) {
+      i = table(lines, i, out);
+    } else if (/^\s*>/.test(l)) {
+      const buf = [];
+      while (i < lines.length && /^\s*>/.test(lines[i])) buf.push(lines[i++].replace(/^\s*>\s?/, ''));
+      out.push(`<blockquote>${mdBlocks(buf)}</blockquote>`);
+    } else if (RE_ITEM.test(l)) {
+      i = list(lines, i, out);
+    } else {
+      const buf = [l];
+      for (i++; i < lines.length && lines[i].trim() && !startsBlock(lines, i); i++) buf.push(lines[i]);
+      out.push(`<p>${buf.map(x => inline(x.trim())).join('<br>')}</p>`);
+    }
+  }
+  return out.join('');
+}
+
+function list(lines, i, out) {
+  const first = lines[i].match(RE_ITEM), base = first[1].length, ordered = /\d/.test(first[2]), items = [];
+  const sibling = mm => mm && indentOf(mm[0]) <= base + 1 && /\d/.test(mm[2]) === ordered;
+  while (i < lines.length) {
+    const l = lines[i], m = l.match(RE_ITEM);
+    if (m && indentOf(l) <= base + 1) {
+      if (!sibling(m)) break;
+      items.push({lines: [m[3]], width: m[1].length + m[2].length + 1}); i++;
+    } else if (!l.trim()) {
+      let j = i + 1;
+      while (j < lines.length && !lines[j].trim()) j++;
+      if (j < lines.length && indentOf(lines[j]) > base + 1) { items.at(-1).lines.push(''); i = j; }
+      else if (j < lines.length && sibling(lines[j].match(RE_ITEM))) i = j;
+      else break;
+    } else if (indentOf(l) > base + 1) {
+      const it = items.at(-1);
+      it.lines.push(l.slice(Math.min(indentOf(l), it.width))); i++;
+    } else if (!startsBlock(lines, i)) {
+      items.at(-1).lines.push(l.trim()); i++;  // lazy continuation of the item's text
+    } else break;
+  }
+  const tag = ordered ? 'ol' : 'ul', start = ordered ? parseInt(first[2], 10) : 1;
+  out.push(`<${tag}${start !== 1 ? ` start="${start}"` : ''}>${items.map(it => `<li>${mdBlocks(it.lines).replace(/^<p>([\s\S]*?)<\/p>/, '$1')}</li>`).join('')}</${tag}>`);
+  return i;
+}
+
+function table(lines, i, out) {
+  const cells = s => s.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim());
+  const headRow = cells(lines[i]);
+  const align = cells(lines[i + 1]).map(c => /^:-+:$/.test(c) ? 'center' : /-:$/.test(c) ? 'right' : '');
+  const rows = [];
+  for (i += 2; i < lines.length && lines[i].includes('|') && lines[i].trim(); i++) rows.push(cells(lines[i]));
+  const cell = (tag, c, k) => `<${tag}${align[k] ? ` style="text-align:${align[k]}"` : ''}>${inline(c)}</${tag}>`;
+  out.push(`<div class="table-wrap"><table><thead><tr>${headRow.map((c, k) => cell('th', c, k)).join('')}</tr></thead><tbody>${
+    rows.map(r => `<tr>${headRow.map((_, k) => cell('td', r[k] ?? '', k)).join('')}</tr>`).join('')}</tbody></table></div>`);
+  return i;
+}
+
+function inline(raw) {
+  const keep = [];
+  const stash = html => `\u0000${keep.push(html) - 1}\u0000`;
+  const link = (u, label) => stash(`<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${label}</a>`);
+  let s = raw
+    .replace(/`([^`\n]+)`/g, (_, c) => stash(`<code>${esc(c)}</code>`))
+    .replace(/!?\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)/g, (_, t, u) => link(u, emphasis(esc(t))))
+    .replace(/(^|[\s(])(https?:\/\/[^\s<>()]*[^\s<>().,;:!?'"\]])/g, (_, pre, u) => pre + link(u, esc(u)));
+  s = emphasis(esc(s));
+  return s.replace(/\u0000(\d+)\u0000/g, (_, k) => keep[+k]);
+}
+function emphasis(s) {
+  return s
+    .replace(/\*\*(?=\S)([\s\S]*?\S)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[^\w])__(?=\S)([\s\S]*?\S)__(?!\w)/g, '$1<strong>$2</strong>')
+    .replace(/(^|[^*\w])\*(?=[^\s*])([^*\n]*?[^\s*]|[^\s*])\*(?![*\w])/g, '$1<em>$2</em>')
+    .replace(/(^|[^\w])_(?=[^\s_])([^_\n]*?[^\s_]|[^\s_])_(?!\w)/g, '$1<em>$2</em>')
+    .replace(/~~(?=\S)([\s\S]*?\S)~~/g, '<del>$1</del>');
+}
+const codeBlock = (code, lang) => `<div class="code"><div class="code-bar"><span>${esc(lang || 'code')}</span><button class="code-copy" type="button">${ICON.copy}<span>Copy</span></button></div><pre><code>${esc(code)}</code></pre></div>`;
+
+// ---------- chats ----------
+const newId = () => crypto.randomUUID?.() || Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+
+async function loadChats() {
+  try { S.chats = await api('/api/chats'); } catch { S.chats = []; }
+  renderChatList();
+}
+function renderChatList() {
+  const nav = $('#chatList');
+  if (!S.chats.length) { nav.innerHTML = '<p class="empty-list">Your chats will show up here.</p>'; return; }
+  const day = 864e5, today = new Date().setHours(0, 0, 0, 0);
+  const groupOf = t => t >= today ? 'Today' : t >= today - day ? 'Yesterday' : t >= today - 7 * day ? 'Previous 7 days' : t >= today - 30 * day ? 'Previous 30 days' : 'Older';
+  let html = '', last = '';
+  for (const c of S.chats) {
+    const g = groupOf(c.updated);
+    if (g !== last) { html += `<div class="group">${g}</div>`; last = g; }
+    html += `<a class="chat-item${S.chat?.id === c.id ? ' active' : ''}" href="#${esc(c.id)}"><span class="t">${esc(c.title)}</span><button class="del" data-del="${esc(c.id)}" title="Delete chat" aria-label="Delete chat">${ICON.trash}</button></a>`;
+  }
+  nav.innerHTML = html;
+}
+async function saveChat(chat) {
+  try { await api('/api/chats/' + chat.id, 'PUT', chat); } catch (e) { toast('Couldn’t save this chat: ' + e.message); }
+  loadChats();
+}
+async function route() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  if (!id) { if (S.chat) { S.chat = null; renderThread(); renderChatList(); } return; }
+  if (S.chat?.id === id) return;
+  if (S.stream?.chat.id === id) S.chat = S.stream.chat;
+  else {
+    try { S.chat = await api('/api/chats/' + encodeURIComponent(id)); }
+    catch { S.chat = null; history.replaceState(null, '', location.pathname); }
+  }
+  renderThread(); renderChatList(); closeSidebar();
+}
+function newChat() {
+  if (location.hash) history.pushState(null, '', location.pathname);
+  S.chat = null;
+  renderThread(); renderChatList(); closeSidebar();
+  $('#input').focus();
+}
+
+// ---------- messages ----------
+const thread = $('#thread');
+const scrollToBottom = () => { thread.scrollTop = thread.scrollHeight; };
+// true when a scroll box is already at (or near) its bottom, so it may follow new content; once
+// the reader scrolls up, it's false and nothing pulls them back. Used only for the Thinking box.
+const atBottomOf = el => el.scrollHeight - el.scrollTop - el.clientHeight < 24;
+
+function renderThread() {
+  const box = $('#messages'), msgs = S.chat?.messages || [];
+  box.innerHTML = '';
+  if (!msgs.length) {
+    box.innerHTML = '<div class="empty"><div class="hello" id="hello" hidden><img class="logo big" src="/logo.png" alt=""><h1>What’s on your mind?</h1><p id="helloSub"></p></div><div class="card panel" id="gate"></div></div>';
+  } else msgs.forEach((m, i) => box.append(msgEl(m, i)));
+  markLast();
+  renderStatus();
+  scrollToBottom();
+}
+function markLast() {
+  const els = $('#messages').querySelectorAll('.msg');
+  els.forEach((e, k) => e.classList.toggle('last', k === els.length - 1));
+}
+const actBtn = (act, icon, label) => `<button class="act" data-mact="${act}" title="${label}" aria-label="${label}">${icon}</button>`;
+
+function msgEl(m, i) {
+  const w = document.createElement('div');
+  w.className = 'msg ' + m.role;
+  w.dataset.i = i;
+  if (m.role === 'user') {
+    const imgs = m.images?.length ? `<div class="msg-imgs">${m.images.map(src => `<img alt="attachment" src="${esc(src)}">`).join('')}</div>` : '';
+    w.innerHTML = `${m.content ? '<div class="bubble"></div>' : ''}${imgs}<div class="actions">${actBtn('copy', ICON.copy, 'Copy')}${actBtn('edit', ICON.edit, 'Edit and resend')}</div>`;
+    if (m.content) w.querySelector('.bubble').textContent = m.content;
+  } else {
+    w.innerHTML = `<details class="think" hidden><summary>${ICON.chev}<span class="lbl"></span></summary><div class="think-body"></div></details><div class="md"></div><div class="tools" hidden></div><div class="note" hidden></div><div class="actions">${actBtn('copy', ICON.copy, 'Copy')}${actBtn('regen', ICON.redo, 'Regenerate')}<span class="meta"></span></div>`;
+  }
+  view.set(m, w);
+  if (m.role === 'assistant') paint(m);
+  return w;
+}
+
+function paint(m) {
+  const w = view.get(m);
+  if (!w) return;
+  const live = S.stream?.msg === m;
+  w.classList.toggle('streaming', live);
+  if (m.reasoning) {
+    const th = w.querySelector('.think'), body = w.querySelector('.think-body'), thinking = live && !m.content;
+    th.hidden = false;
+    body.textContent = m.reasoning;
+    th.querySelector('.lbl').textContent = thinking ? 'Thinking…' : m.thinkMs != null ? `Thought for ${fmtSecs(m.thinkMs)}` : 'Thoughts';
+    th.toggleAttribute('data-done', !thinking);
+    if (thinking && !w.dataset.opened) { th.open = true; w.dataset.opened = '1'; }
+    if (live && m.content && !w.dataset.closed) { th.open = false; w.dataset.closed = '1'; }
+    if (thinking && atBottomOf(body)) body.scrollTop = body.scrollHeight;  // follow unless the reader scrolled up
+  }
+  const hasCalls = m.toolCalls?.length;
+  w.querySelector('.md').innerHTML = m.content ? renderMarkdown(m.content) : live && !m.reasoning && !hasCalls ? '<span class="typing"><i></i><i></i><i></i></span>' : '';
+  paintTools(m, w);
+  const note = w.querySelector('.note');
+  const n = m.error ? ['note err', m.error] : m.stopped ? ['note', 'Stopped.'] : m.finish === 'length' ? ['note', 'Cut off: the reply reached the length limit (Settings → Longest reply, or the model’s context).'] : m.finish === 'tool_limit' ? ['note', `Stopped after ${MAX_TOOL_STEPS} rounds of tool use.`] : null;
+  note.hidden = !n || live;
+  if (n) { note.className = n[0]; note.textContent = n[1]; }
+  const tokens = m.usage?.completion_tokens;
+  w.querySelector('.meta').textContent = tokens ? `${tokens.toLocaleString()} tokens${m.tps ? ` · ${m.tps.toFixed(1)} tok/s` : ''}` : '';
+}
+const TOOL_STAT = {
+  pending: ['', 'Preparing…'], ask: ['wait', 'Needs your approval'], running: ['wait', 'Running…'],
+  done: ['ok', 'Done'], error: ['bad', 'Error'], skipped: ['', 'Skipped'],
+};
+// The one argument worth showing on the card; the rest live in the arguments the model sent.
+function toolArgText(call) {
+  const a = call.args || {};
+  const first = {
+    run_command: a.command, run_python: a.code, web_search: a.query, fetch_url: a.url,
+    browser_navigate: a.url, browser_act: [a.action, a.ref != null && a.ref !== '' ? `#${a.ref}` : a.target, a.text].filter(Boolean).join(' · '),
+    read_file: a.path, write_file: a.path, edit_file: a.path, list_dir: a.path,
+    generate_image: a.prompt, remember: a.note, forget: a.note,
+  }[call.name];
+  if (first != null) return String(first);
+  const s = JSON.stringify(a);
+  return s === '{}' ? '' : s;
+}
+function paintTools(m, w) {
+  const box = w.querySelector('.tools'), calls = m.toolCalls || [];
+  if (!calls.length) { box.hidden = true; box.innerHTML = ''; return; }
+  box.hidden = false;
+  box.innerHTML = calls.map(call => {
+    const def = toolDef(call.name), [cls, label] = TOOL_STAT[call.status] || TOOL_STAT.pending;
+    const stat = call.status === 'running' ? `<span class="spinner sm"></span>${label}` : esc(label);
+    const arg = toolArgText(call);
+    const ask = call.status === 'ask';
+    const out = call.result && call.status !== 'ask';
+    return `<div class="tool ${call.status === 'error' ? 'err' : ask ? 'wait' : ''}" data-call="${esc(call.id)}">
+      <div class="tool-head">${ICON[def?.icon] || ICON.tool}<span class="lbl">${esc(def?.label || call.name)}</span><span class="tool-stat ${cls}">${stat}</span></div>
+      ${arg ? `<div class="tool-arg mono">${esc(arg)}</div>` : ''}
+      ${ask ? `<div class="tool-approve"><button class="btn primary sm" data-tool-act="run" data-call="${esc(call.id)}">${ICON.play}Run</button><button class="btn sm" data-tool-act="skip" data-call="${esc(call.id)}">Skip</button><span class="warn">Runs on this Mac.</span></div>` : ''}
+      ${out ? `<details class="tool-out"><summary>${ICON.chev}Output</summary><pre></pre></details>` : ''}
+      ${call.image ? `<img class="tool-img" alt="tool result" src="${esc(call.image)}">` : ''}
+    </div>`;
+  }).join('');
+  // Fill outputs as text (never as HTML), and keep an opened one open across repaints.
+  box.querySelectorAll('.tool').forEach(el => {
+    const call = calls.find(c => c.id === el.dataset.call), pre = el.querySelector('.tool-out pre');
+    if (pre) { pre.textContent = call.result; if (openOut.has(call.id)) el.querySelector('.tool-out').open = true; }
+  });
+}
+const openOut = new Set();  // tool outputs the user expanded, remembered across repaints
+let paintQueued = 0;
+function schedulePaint(m) {
+  if (paintQueued) return;
+  paintQueued = requestAnimationFrame(() => {
+    paintQueued = 0;
+    if (!view.get(m)?.isConnected) return;
+    paint(m);  // never scrolls the thread: the reader stays wherever they are while a reply streams
+  });
+}
+
+const startTurn = chat => { S.turnPromise = generate(chat); return S.turnPromise; };
+
+async function submit() {
+  const ta = $('#input'), text = ta.value.trim(), imgs = pendingImages.slice();
+  if (S.stream) {
+    if (!text && !imgs.length) { S.stream.ctrl.abort(); return; }  // nothing new: just stop
+    S.stream.ctrl.abort();                                         // interrupt the running reply...
+    try { await S.turnPromise; } catch {}                          // ...let it settle and save, then send
+  }
+  if ((!text && !imgs.length) || gate() !== 'ready') return;
+  if (!S.chat) {
+    S.chat = {id: newId(), title: (text || 'Image').replace(/\s+/g, ' ').slice(0, 60), created: Date.now(), updated: Date.now(), messages: []};
+    history.pushState(null, '', '#' + S.chat.id);
+  }
+  S.chat.messages.push({role: 'user', content: text, ...(imgs.length ? {images: imgs} : {})});
+  S.chat.updated = Date.now();
+  ta.value = ''; pendingImages = []; renderPendingImages(); autosize();
+  renderThread();
+  saveChat(S.chat);
+  startTurn(S.chat);
+}
+
+// The messages the model sees, rebuilt from the chat so far: user turns, the assistant's
+// own turns (with any tool calls it made), and each tool's result as a tool message.
+function apiMessages(chat, stopAt) {
+  // With tools on, tell the model the date (it can't know it, and searches for the wrong year
+  // without it) and where its tools run, so commands come out in macOS form.
+  const today = new Date().toLocaleDateString('en-US', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'});
+  const system = [(prefs.system ?? S.config.system ?? '').trim(),
+    prefs.think && (prefs.effort || 'low') === 'low' ? 'Think briefly and get to the point. Do not over-analyze simple requests; when the task is easy, answer directly with little or no deliberation.' : '',
+    enabledTools().length ? `Today is ${today}. Your tools run on the user's Mac (macOS).` : '',
+    S.config.memory ? `What you remember about the user:\n${S.config.memory}` : ''].filter(Boolean).join('\n\n');
+  const out = system ? [{role: 'system', content: system}] : [];
+  const end = stopAt ? chat.messages.indexOf(stopAt) : chat.messages.length;
+  const turnStart = chat.messages.findLastIndex((m, i) => i < end && m.role === 'user');
+  // The newest image a tool returned this turn (a browser screenshot, say) goes back inside its tool
+  // result so the model sees it; older ones are stale and would only cost context.
+  const lastShot = chat.messages.slice(turnStart + 1, end).flatMap(m => m.toolCalls || []).findLast(c => c.image?.startsWith('data:'));
+  for (const [i, m] of chat.messages.entries()) {
+    if (i >= end) break;
+    if (m.role === 'user') {
+      // attached images ride along as content parts so the (multimodal) model can see them
+      if (m.images?.length) out.push({role: 'user', content: [...(m.content ? [{type: 'text', text: m.content}] : []),
+        ...m.images.map(src => ({type: 'image_url', image_url: {url: src}}))]});
+      else if (m.content) out.push({role: 'user', content: m.content});
+    }
+    else if (m.role === 'assistant') {
+      if (m.toolCalls?.length) {
+        // Within the current turn, replay the model's reasoning so each tool step builds on the last
+        // (vLLM reads it as `reasoning`); earlier turns go without, to keep the context lean.
+        out.push({role: 'assistant', content: m.content || '', ...(i > turnStart && m.reasoning ? {reasoning: m.reasoning} : {}),
+          tool_calls: m.toolCalls.map(c => ({id: c.id, type: 'function', function: {name: c.name, arguments: c.arguments || '{}'}}))});
+        for (const c of m.toolCalls) out.push({role: 'tool', tool_call_id: c.id, content: c === lastShot
+          ? [{type: 'text', text: String(c.result ?? '')}, {type: 'image_url', image_url: {url: c.image}}] : String(c.result ?? '')});
+      } else if (m.content) out.push({role: 'assistant', content: m.content});
+    }
+  }
+  return out;
+}
+
+async function generate(chat) {
+  const ctrl = new AbortController();
+  S.stream = {ctrl, chat, msg: null};
+  updateSend();
+  try {
+    for (let step = 0; step < MAX_TOOL_STEPS; step++) {
+      const msg = {role: 'assistant', content: '', reasoning: '', model: S.status?.model};
+      chat.messages.push(msg);
+      S.stream.msg = msg;
+      if (S.chat === chat) { $('#messages').append(msgEl(msg, chat.messages.length - 1)); markLast(); }
+      updateSend();
+      await streamModel(chat, msg, ctrl);
+      chat.updated = Date.now();
+      await saveChat(chat);
+      if (ctrl.signal.aborted || !msg.toolCalls?.length) break;  // stopped, or a plain answer: done
+      const keepGoing = await runToolCalls(chat, msg, ctrl);     // run the tools, then loop to send results back
+      chat.updated = Date.now();
+      await saveChat(chat);
+      if (!keepGoing) break;
+      if (step === MAX_TOOL_STEPS - 1) { msg.finish = 'tool_limit'; if (S.chat === chat) paint(msg); }
+    }
+  } finally {
+    S.stream = null;
+    updateSend();
+    if (S.chat === chat) { const last = chat.messages.at(-1); if (last) paint(last); }
+  }
+}
+
+// One model call, streamed into `msg`. Fills content/reasoning/usage, and msg.toolCalls when the model asks for tools.
+async function streamModel(chat, msg, ctrl) {
+  const body = {
+    model: S.status.model, stream: true, stream_options: {include_usage: true},
+    messages: apiMessages(chat, msg),
+    chat_template_kwargs: {enable_thinking: !!prefs.think, ...(prefs.think ? {reasoning_effort: prefs.effort || 'low'} : {})}, ...SAMPLING[!!prefs.think],
+  };
+  const tools = enabledTools();
+  if (tools.length) { body.tools = tools.map(t => t.spec); body.tool_choice = 'auto'; }
+  if (prefs.temperature != null) body.temperature = +prefs.temperature;
+  if (+prefs.maxTokens > 0) body.max_tokens = +prefs.maxTokens;
+
+  const acc = [];  // tool calls, accumulated by index as their arguments stream in
+  const t0 = performance.now();
+  let tFirst = 0;
+  try {
+    const r = await fetch('/v1/chat/completions', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body), signal: ctrl.signal});
+    if (!r.ok) throw new Error(errText(await r.json().catch(() => ({}))) || `The model answered with HTTP ${r.status}.`);
+    const reader = r.body.getReader(), dec = new TextDecoder();
+    let buf = '';
+    for (;;) {
+      const {value, done} = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, {stream: true});
+      let nl;
+      while ((nl = buf.indexOf('\n')) >= 0) {
+        const line = buf.slice(0, nl).trim();
+        buf = buf.slice(nl + 1);
+        if (!line.startsWith('data:') || line === 'data: [DONE]') continue;
+        let c;
+        try { c = JSON.parse(line.slice(5)); } catch { continue; }
+        if (c.error) throw new Error(errText(c) || 'The model reported an error.');
+        if (c.usage) msg.usage = c.usage;
+        const ch = c.choices?.[0];
+        if (!ch) continue;
+        const d = ch.delta || {}, thought = d.reasoning ?? d.reasoning_content;
+        if (thought) { tFirst ||= performance.now(); msg.reasoning += thought; }
+        if (d.content) {
+          tFirst ||= performance.now();
+          if (msg.reasoning && msg.thinkMs == null) msg.thinkMs = Math.round(performance.now() - t0);
+          msg.content += d.content;
+        }
+        for (const tc of d.tool_calls || []) {
+          const slot = acc[tc.index] || (acc[tc.index] = {id: '', name: '', arguments: ''});
+          if (tc.id) slot.id = tc.id;
+          if (tc.function?.name) slot.name += tc.function.name;
+          if (tc.function?.arguments) slot.arguments += tc.function.arguments;
+          msg.toolCalls = acc;
+        }
+        if (ch.finish_reason) msg.finish = ch.finish_reason;
+        schedulePaint(msg);
+      }
+    }
+  } catch (e) {
+    if (e.name === 'AbortError') msg.stopped = true;
+    else msg.error = e.message || String(e);
+  }
+  if (acc.length) {  // settle the tool calls: give each an id, a parsed-args object for the UI, a pending status
+    msg.toolCalls = acc.map((c, i) => {
+      let args = {};
+      try { args = JSON.parse(c.arguments || '{}'); } catch {}
+      return {id: c.id || `call_${chat.id}_${chat.messages.length}_${i}`, name: c.name, arguments: c.arguments || '{}', args, status: 'pending', result: ''};
+    });
+  }
+  const tokens = msg.usage?.completion_tokens, secs = (performance.now() - tFirst) / 1000;
+  if (tokens && tFirst && secs > 0.2) msg.tps = tokens / secs;
+  if (S.chat === chat) paint(msg);
+  if (msg.error) refreshStatus();
+}
+
+const abortPromise = ctrl => new Promise(res => {
+  if (ctrl.signal.aborted) return res('abort');
+  ctrl.signal.addEventListener('abort', () => res('abort'), {once: true});
+});
+
+// Run a turn's tool calls in order. Safe tools run on their own; a command waits for the user's
+// Run/Skip unless auto-run is on. Returns false only if the user stopped the turn.
+async function runToolCalls(chat, msg, ctrl) {
+  for (const call of msg.toolCalls) {
+    if (ctrl.signal.aborted) { call.status = 'skipped'; call.result = 'Stopped by the user.'; continue; }
+    const def = toolDef(call.name), risk = def?.risk || 'confirm';
+    call.risk = risk;
+    if (!def) { call.status = 'error'; call.result = `Unknown tool "${call.name}".`; repaintCalls(msg); continue; }
+    if (risk === 'confirm' && !prefs.autoRun) {
+      call.status = 'ask'; repaintCalls(msg);
+      const decision = await Promise.race([new Promise(res => { call.decide = res; }), abortPromise(ctrl)]);
+      call.decide = null;
+      if (decision !== 'run') {
+        call.status = 'skipped';
+        call.result = decision === 'abort' ? 'Stopped by the user.' : 'The user chose not to run this command.';
+        repaintCalls(msg);
+        if (decision === 'abort') return false;
+        continue;
+      }
+    }
+    call.status = 'running'; repaintCalls(msg);
+    try {
+      const r = await api('/api/tools/run', 'POST', {name: call.name, arguments: call.args});
+      call.result = r.content ?? ''; call.image = r.image || null; call.status = 'done';
+      if (call.name === 'remember' || call.name === 'forget') refreshMemory();
+    } catch (e) { call.result = `Error: ${e.message}`; call.status = 'error'; }
+    repaintCalls(msg);
+  }
+  return !ctrl.signal.aborted;
+}
+async function refreshMemory() {  // keep the injected memory current after the model changes it
+  try { S.config.memory = (await api('/api/config')).memory || ''; } catch {}
+}
+function repaintCalls(msg) {
+  if (!view.get(msg)?.isConnected) return;
+  paint(msg);  // tool cards update in place without moving the thread
+}
+
+$('#messages').addEventListener('click', e => {
+  const cc = e.target.closest('.code-copy');
+  if (cc) return copyText(cc.closest('.code').querySelector('code').textContent, cc);
+  const ta = e.target.closest('[data-tool-act]');
+  if (ta) {  // approve or skip a pending command
+    const msgEl = ta.closest('.msg'), m = S.chat?.messages[+msgEl?.dataset.i];
+    const call = m?.toolCalls?.find(c => c.id === ta.dataset.call);
+    if (call?.decide) { const d = call.decide; call.decide = null; d(ta.dataset.toolAct); }
+    return;
+  }
+  const b = e.target.closest('[data-mact]');
+  if (!b || !S.chat) return;
+  const i = +b.closest('.msg').dataset.i, m = S.chat.messages[i];
+  if (b.dataset.mact === 'copy') copyText(m.content, b);
+  if (S.stream) return;
+  if (b.dataset.mact === 'edit') {  // the chat on disk keeps the old turns until the edited message is sent
+    S.chat.messages.splice(i);
+    $('#input').value = m.content;
+    renderThread(); autosize();
+    $('#input').focus();
+  }
+  if (b.dataset.mact === 'regen' && gate() === 'ready') {
+    S.chat.messages.splice(i);
+    renderThread();
+    startTurn(S.chat);
+  }
+});
+async function copyText(text, btn) {
+  try { await navigator.clipboard.writeText(text); } catch {
+    const ta = Object.assign(document.createElement('textarea'), {value: text});
+    document.body.append(ta); ta.select(); document.execCommand('copy'); ta.remove();
+  }
+  const svgEl = btn.querySelector('svg');
+  if (svgEl) { const old = svgEl.outerHTML; svgEl.outerHTML = ICON.check; setTimeout(() => { const s = btn.querySelector('svg'); if (s) s.outerHTML = old; }, 1200); }
+}
+
+// ---------- composer ----------
+function autosize() {
+  const ta = $('#input');
+  ta.style.height = 'auto';
+  ta.style.height = Math.min(ta.scrollHeight, 240) + 'px';
+  updateSend();
+}
+function updateSend() {
+  const b = $('#send'), streaming = !!S.stream;
+  const has = $('#input').value.trim() || pendingImages.length;
+  const stopMode = streaming && !has;  // mid-reply with nothing typed: the button stops it
+  b.innerHTML = stopMode ? ICON.stop : ICON.send;
+  b.title = stopMode ? 'Stop' : streaming ? 'Interrupt and send' : 'Send';
+  b.setAttribute('aria-label', b.title);
+  b.disabled = !stopMode && !streaming && (gate() !== 'ready' || !has);
+}
+
+// ---------- image attachments (the model is multimodal; it can look at what you send) ----------
+let pendingImages = [];
+function renderPendingImages() {
+  const box = $('#attachments');
+  box.hidden = !pendingImages.length;
+  box.innerHTML = pendingImages.map((src, i) =>
+    `<div class="thumb"><img src="${esc(src)}" alt=""><button type="button" data-rm="${i}" aria-label="Remove">${ICON.close}</button></div>`).join('');
+}
+function addImageFiles(files) {
+  for (const f of files) {
+    if (!f.type.startsWith('image/') || pendingImages.length >= 6) continue;
+    const r = new FileReader();
+    r.onload = () => { pendingImages.push(r.result); renderPendingImages(); updateSend(); };
+    r.readAsDataURL(f);
+  }
+}
+$('#attach').addEventListener('click', () => $('#fileInput').click());
+$('#fileInput').addEventListener('change', e => { addImageFiles(e.target.files); e.target.value = ''; });
+$('#attachments').addEventListener('click', e => {
+  const rm = e.target.closest('[data-rm]');
+  if (rm) { pendingImages.splice(+rm.dataset.rm, 1); renderPendingImages(); updateSend(); }
+});
+$('#input').addEventListener('paste', e => {
+  const imgs = [...(e.clipboardData?.files || [])].filter(f => f.type.startsWith('image/'));
+  if (imgs.length) { e.preventDefault(); addImageFiles(imgs); }
+});
+
+$('#input').addEventListener('input', autosize);
+$('#input').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); submit(); }
+});
+$('#composer').addEventListener('submit', e => { e.preventDefault(); submit(); });
+$('#think').addEventListener('click', () => { prefs.think = !prefs.think; savePrefs(); renderPrefs(); });
+$('#effortSeg').addEventListener('click', e => { const b = e.target.closest('[data-effort]'); if (b) { prefs.effort = b.dataset.effort; savePrefs(); renderPrefs(); } });
+$('#tools').addEventListener('click', () => { prefs.toolsOn = !prefs.toolsOn; savePrefs(); renderPrefs(); });
+$('#autoRun').addEventListener('change', e => { prefs.autoRun = e.target.checked; savePrefs(); });
+$('#toolList').addEventListener('change', e => {
+  const name = e.target.dataset?.tool;
+  if (name) { prefs.tools[name] = e.target.checked; savePrefs(); renderPrefs(); }
+});
+
+// ---------- settings drawer and sidebar ----------
+function renderPrefs() {
+  const sys = prefs.system ?? S.config.system ?? '';
+  if (document.activeElement !== $('#sys')) $('#sys').value = sys;
+  $('#sysResetRow').hidden = !S.config.system || sys === S.config.system;
+  const temp = prefs.temperature ?? SAMPLING[!!prefs.think].temperature;
+  $('#temp').value = temp;
+  $('#tempVal').textContent = (+temp).toFixed(2);
+  $('#tempReset').hidden = prefs.temperature == null;
+  $('#tempNote').textContent = prefs.temperature == null ? `recommended for thinking ${prefs.think ? 'on' : 'off'}` : 'your setting';
+  $('#maxTok').value = prefs.maxTokens || '';
+  $('#think').setAttribute('aria-pressed', String(!!prefs.think));
+  $('#effortSeg').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.effort === (prefs.effort || 'low'))));
+  renderTools();
+}
+function renderTools() {
+  const chip = $('#tools'), sec = $('#toolsSec'), have = !GUEST && S.toolDefs.length > 0;
+  chip.hidden = !have;
+  sec.hidden = !have;
+  if (!have) return;
+  chip.setAttribute('aria-pressed', String(!!prefs.toolsOn));
+  $('#autoRun').checked = !!prefs.autoRun;
+  const list = $('#toolList'), key = S.toolDefs.map(t => t.name + (prefs.tools[t.name] !== false)).join() + prefs.toolsOn;
+  if (list.dataset.key === key) return;
+  list.dataset.key = key;
+  list.innerHTML = S.toolDefs.map(t => `<label class="lbl" style="display:flex;align-items:center;gap:10px;margin:8px 0 0;font-weight:450;cursor:pointer${prefs.toolsOn ? '' : ';opacity:.5'}">
+    <input type="checkbox" data-tool="${esc(t.name)}"${prefs.tools[t.name] !== false ? ' checked' : ''}${prefs.toolsOn ? '' : ' disabled'}>
+    <span style="display:inline-flex;align-items:center;gap:7px">${ICON[t.icon] || ICON.tool}${esc(t.label)}${t.risk === 'confirm' ? '<span class="faint" style="margin-left:0">· asks first</span>' : ''}</span>
+  </label>`).join('');
+}
+$('#sys').addEventListener('input', e => { prefs.system = e.target.value; savePrefs(); $('#sysResetRow').hidden = !S.config.system || e.target.value === S.config.system; });
+$('#sysReset').addEventListener('click', () => { prefs.system = null; savePrefs(); $('#sys').value = S.config.system; $('#sysResetRow').hidden = true; });
+$('#temp').addEventListener('input', e => { prefs.temperature = +e.target.value; savePrefs(); renderPrefs(); });
+$('#tempReset').addEventListener('click', () => { prefs.temperature = null; savePrefs(); renderPrefs(); });
+$('#maxTok').addEventListener('input', e => { prefs.maxTokens = e.target.value; savePrefs(); });
+$('#logBox').addEventListener('toggle', e => { if (e.target.open) refreshBox(true); });
+
+function syncScrim() { $('#scrim').classList.toggle('show', $('#drawer').classList.contains('open') || $('#sidebar').classList.contains('open')); }
+function openDrawer() {
+  closeSidebar();
+  $('#drawer').classList.add('open'); syncScrim();
+  renderPrefs(); renderStatus();
+  if (S.status?.state === 'no_model') refreshBox(true);
+}
+function closeDrawer() { $('#drawer').classList.remove('open'); syncScrim(); }
+function closeSidebar() { $('#sidebar').classList.remove('open'); syncScrim(); }
+$('#closeDrawer').addEventListener('click', closeDrawer);
+$('#scrim').addEventListener('click', () => { closeDrawer(); closeSidebar(); });
+$('#menuBtn').addEventListener('click', () => { $('#sidebar').classList.toggle('open'); syncScrim(); });
+$('#newChat').addEventListener('click', newChat);
+$('#chatList').addEventListener('click', async e => {
+  const del = e.target.closest('[data-del]');
+  if (!del) return;
+  e.preventDefault(); e.stopPropagation();
+  const id = del.dataset.del, c = S.chats.find(x => x.id === id);
+  if (!confirm(`Delete “${c?.title || 'this chat'}”? This can’t be undone.`)) return;
+  try { await api('/api/chats/' + id, 'DELETE'); } catch (err) { return toast(err.message); }
+  if (S.chat?.id === id) newChat();
+  loadChats();
+});
+$('#messages').addEventListener('toggle', e => {  // remember which tool outputs the user opened
+  const t = e.target.closest?.('.tool-out'), id = t?.closest('.tool')?.dataset.call;
+  if (id) t.open ? openOut.add(id) : openOut.delete(id);
+}, true);
+window.addEventListener('hashchange', route);
+window.addEventListener('popstate', route);
+
+function toast(text) {
+  const t = $('#toast');
+  t.textContent = text; t.classList.add('show');
+  clearTimeout(toast.timer); toast.timer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// ---------- start ----------
+(async function init() {
+  document.querySelectorAll('[data-icon]').forEach(el => el.insertAdjacentHTML('afterbegin', ICON[el.dataset.icon]));
+  try { S.config = await api('/api/config'); } catch {}
+  if (!GUEST) { try { S.toolDefs = (await api('/api/tools')).tools || []; } catch {} }
+  fillModelOptions();
+  renderPrefs();
+  loadChats();
+  if (location.hash) await route();
+  if (!S.chat) renderThread();
+  refreshStatus();
+  $('#input').focus();
+})();
+</script>
+</body>
+</html>

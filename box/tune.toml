@@ -1,0 +1,15 @@
+# Settings for tune.sh (copied into the run folder as config.toml).
+# Everything not set here uses the tool's defaults.
+
+# Default is 200. 100 trials already finds a good trade-off on most
+# models and halves the GPU bill; resume with more trials later if you want.
+n_trials = 100
+n_startup_trials = 30
+
+# "bnb_4bit" lets a model ~2.5x larger fit in the same VRAM, at some fidelity cost.
+quantization = "none"
+
+# Write a full standalone model (servable by vLLM) instead of a LoRA adapter.
+export_strategy = "merge"
+
+seed = 42

@@ -1,0 +1,15 @@
+#!/bin/bash
+# fikirmatik.ai launcher: starts ui.py in the background, which opens the browser (or, if it's
+# already running, just shows the page again). Its log is ~/Library/Logs/fikirmatik.log.
+KIT="$(cd "$(dirname "$0")/../../.." && pwd)"
+# Copied out of the kit folder (into /Applications, say)? Fall back to a fixed path — edit this to
+# the full path of your own fikirmatik folder if you move the app out of it.
+[ -f "$KIT/ui.py" ] || KIT="$HOME/fikirmatik"
+# Apps start with a bare PATH; prefer the python.org / Homebrew Python over Apple's stub.
+export PATH="/Library/Frameworks/Python.framework/Versions/Current/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
+if [ ! -f "$KIT/ui.py" ] || ! command -v python3 >/dev/null; then
+  osascript -e 'display alert "fikirmatik.ai can’t start" message "It needs python3 and the folder with ui.py in it. Keep fikirmatik.ai inside that folder, or drag it to the Dock from there."' >/dev/null
+  exit 1
+fi
+mkdir -p "$HOME/Library/Logs"
+cd "$KIT" && nohup python3 ui.py >>"$HOME/Library/Logs/fikirmatik.log" 2>&1 &

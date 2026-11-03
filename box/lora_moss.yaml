@@ -1,0 +1,59 @@
+# ai-toolkit LoRA config for MOSS-Image. train.sh fills in the __PLACEHOLDERS__.
+# Outputs land in $WORK/loras/<name>/, which ComfyUI lists under loras/trained/.
+job: extension
+config:
+  name: "__NAME__"
+  process:
+    - type: "sd_trainer"
+      training_folder: "__OUT__"
+      device: cuda:0
+      trigger_word: "__TRIGGER__"
+      network:
+        type: "lora"
+        linear: 32
+        linear_alpha: 32
+      save:
+        dtype: bf16
+        save_every: 250
+        max_step_saves_to_keep: 6
+      datasets:
+        - folder_path: "__DATASET__"
+          caption_ext: "txt"
+          caption_dropout_rate: 0.05
+          cache_latents_to_disk: true
+          resolution: [512, 768, 1024]
+      train:
+        batch_size: 1
+        steps: __STEPS__
+        gradient_accumulation: 1
+        train_unet: true
+        train_text_encoder: false
+        gradient_checkpointing: true
+        cache_text_embeddings: true
+        noise_scheduler: "flowmatch"
+        optimizer: "adamw8bit"
+        lr: 0.0001
+        dtype: bf16
+      model:
+        # Train on Base: LoRAs trained there also transfer to SFT.
+        name_or_path: "OpenMOSS-Team/MOSS-Image-Base"
+        arch: "moss_image"
+        quantize: false
+      sample:
+        sampler: "flowmatch"
+        sample_every: 250
+        width: 1024
+        height: 1024
+        prompts:
+          - "[trigger], portrait photo, soft window light"
+          - "[trigger], full body, standing in a city street at night"
+          - "[trigger], close-up, studio background"
+          - "a photo of a mountain lake at sunrise"   # no trigger: checks the base look isn't overwritten
+        neg: ""
+        seed: 42
+        walk_seed: true
+        guidance_scale: 3
+        sample_steps: 30
+meta:
+  name: "[name]"
+  version: "1.0"

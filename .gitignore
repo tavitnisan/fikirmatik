@@ -1,0 +1,15 @@
+# Secrets and personal data — NEVER publish these.
+.env
+memory.txt
+chats/
+images/
+pulled/
+
+# Python / macOS cruft
+__pycache__/
+*.pyc
+.DS_Store
+
+# One-off scratch scripts, not part of the kit
+ig/
+pulled/
