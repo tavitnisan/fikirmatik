@@ -163,13 +163,12 @@ watching. Guests you share with over Tailscale get plain chat only, never the to
 
 ## The model
 
-`./gpu.sh setup` pulls [**tavitnisanyan/fikirmatik**](https://huggingface.co/tavitnisanyan/fikirmatik)
-— an **abliterated** Qwen3.8‑27B. The refusal direction has been removed from the weights, so it
-answers directly instead of declining; nothing else about the base model was changed (only the
-residual-stream writers differ from stock — the model card has the tensor-level diff). It's
-Apache‑2.0, multimodal (it can read images you attach), and handles tool calling.
-
-Practically: **there's no safety layer but you.** Don't point it at people who aren't expecting that.
+`./gpu.sh setup` pulls [**tavitnisanyan/fikirmatik**](https://huggingface.co/tavitnisanyan/fikirmatik):
+an abliterated Qwen3.8‑27B — the refusal direction is removed from the weights, so it answers
+directly rather than declining. Nothing else about the base model changed (only the residual-stream
+writers differ from stock; the model card has the tensor diff). Apache‑2.0, multimodal (it reads
+images you attach), and good at tool calling. Since it won't refuse, you're the only filter on what
+it produces — worth remembering before you share the chat with guests over Tailscale.
 
 Prefer the stock model? Set `MODEL=Qwen/Qwen3.8-27B` in `.env` before running setup.
 
