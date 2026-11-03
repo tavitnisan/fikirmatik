@@ -7,7 +7,7 @@ KIT="$(cd "$(dirname "$0")" && pwd)"
 SSH_KEY="${SSH_KEY:-$HOME/.ssh/gpu_rental_ed25519}"
 POD_USER="${POD_USER:-root}"
 POD_PORT="${POD_PORT:-22}"
-MODEL="${MODEL:-Qwen/Qwen3.8-27B}"
+MODEL="${MODEL:-tavitnisanyan/fikirmatik}"
 KNOWN_HOSTS="$HOME/.ssh/known_hosts_gpu"
 
 usage() {

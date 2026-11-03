@@ -7,7 +7,7 @@ export HF_HOME="$WORK/hf"
 # The package cache is disposable; keep it on the container disk, not the billed volume.
 export UV_CACHE_DIR="${UV_CACHE_DIR:-$HOME/.cache/uv}"
 export UV_LINK_MODE=copy
-export MODEL="${MODEL:-Qwen/Qwen3.8-27B}"
+export MODEL="${MODEL:-tavitnisanyan/fikirmatik}"
 export PATH="$WORK/venvs/lab/bin:$PATH"
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
