@@ -12,17 +12,20 @@ and ask Claude to do it for you.**
 
 ## ⚡ The fast path: ask Claude
 
-1. Download this folder (clone the repo, or grab the ZIP and unzip it).
-2. Open it in **Claude Code** (the `claude` terminal app, the desktop app's Code tab, or the VS Code
-   extension — all at [claude.com/claude-code](https://claude.com/claude-code)).
-3. Paste this to Claude:
+Open **[Claude Code](https://claude.com/claude-code)** (the `claude` terminal app, the desktop app's
+Code tab, or the VS Code extension) in any folder, and paste this:
 
-> **Read `RUN_WITH_CLAUDE.md` and set up fikirmatik.ai for me. Generate my SSH key, walk me through
-> renting the RunPod GPU step by step (tell me exactly what to click), fill in my `.env`, run the
-> install, and launch the chat app. Run all the local commands for me.**
+> **Clone https://github.com/tavitnisan/fikirmatik, read its `RUN_WITH_CLAUDE.md`, and set it up for
+> me. Generate my SSH key, walk me through renting the RunPod GPU step by step (tell me exactly what
+> to click), fill in my `.env`, run the install, and launch the chat app. Run all the local commands
+> for me.**
 
-Claude will do the terminal work and tell you the few things only you can do (make a RunPod account,
-paste a key, click Deploy). That's it.
+That's the whole thing. Claude does the terminal work and tells you the few steps only you can do —
+make a RunPod account, paste a key, click Deploy.
+
+**It has to be an AI that can run commands on your machine** (Claude Code, Cursor, or similar).
+Claude or ChatGPT in a browser tab can read this guide and talk you through it, but they can't clone
+a repo or run the installer for you — you'd be typing the commands yourself.
 
 > **Prefer to do it yourself?** Every step is below. It's all `./gpu.sh` commands plus a few clicks
 > on RunPod.
